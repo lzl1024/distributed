@@ -24,7 +24,6 @@ public class PairListenThread extends Thread {
             ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
             while(true) {
                 Message message = (Message)in.readObject();
-                boolean needDuplicate = false;
                 switch (matchReceiveRule(message)) {
                 case DROP:
                     break;
@@ -32,13 +31,13 @@ public class PairListenThread extends Thread {
                     break;
                 case DUPLICATE:
                     // no break, because at least on message should be received
-                    needDuplicate = true;
+                    message.set_duplicate(true);
                 default:
                     receiveIn(message);       
                     // TODO receive delayed message
                     
                     // receive duplicated message if needed
-                    if (needDuplicate) {
+                    if (message.get_duplicate()) {
                         receiveIn(message);
                     }
                 }   

@@ -31,7 +31,9 @@ public class UserThread extends Thread {
                     String kind = in.readLine();
                     System.out.println("Please enter the data:");
                     String data = in.readLine();
-                    passer.send(new Message(passer.myself.getName(), dest, kind, data));
+                    Message msg = new Message(dest, kind, data);
+                    msg.set_source(passer.myself.getName());
+                    passer.send(msg);
                 } else if (cmdInput.equals("2")) {
                     System.out.println("Receive Messages :" + passer.receive());
                 }

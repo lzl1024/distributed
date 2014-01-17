@@ -9,50 +9,50 @@ public class Message implements Serializable {
     private static final long serialVersionUID = 1L;
     private Header header = null;
     private Object payload = null;
+    private boolean duplicate;
     
     public class Header implements Serializable {
         /**
          * 
          */
-        private static final long serialVersionUID = 2L;
-        public int id;
-        public String src;
-        public String dest;
-        public String kind;
+        private static final long serialVersionUID = 1L;
+        private int sequenceNumber;
+        private String source;
+        private String dest;
+        private String kind;
         
-        public Header(String src, String dest, String kind) {
-            this.src = src;
+        public Header(String dest, String kind) {
             this.dest = dest;
             this.kind = kind;
         }
 
         @Override
         public String toString() {
-            return "[id=" + id + ", src=" + src + ", dest=" + dest
-                    + ", kind=" + kind + "]";
-        }
-        
+            return "[sequenceNumber=" + sequenceNumber + ", source="
+                    + source + ", dest=" + dest + ", kind=" + kind + "]";
+        }   
     }
     
-    public Message(String src, String dest, String kind, Object data) {
-        this.header = new Header(src, dest, kind);
+    public Message(String dest, String kind, Object data) {
+        this.header = new Header(dest, kind);
         this.payload = data;
+        this.duplicate = false;
     }
 
-    public void set_id(int id) {
-        this.header.id = id;
+    public void set_seqNum(int sequenceNumber) {
+        this.header.sequenceNumber = sequenceNumber;
     }
     
-    public int get_id() {
-        return this.header.id;
+    public int get_seqNumr() {
+        return this.header.sequenceNumber;
     }
 
-    public String getSrc() {
-        return this.header.src;
+    public String get_source() {
+        return this.header.source;
     }
 
-    public void setSrc(String src) {
-        this.header.src = src;
+    public void set_source(String source) {
+        this.header.source = source;
     }
 
     public String getDest() {
@@ -79,9 +79,17 @@ public class Message implements Serializable {
         this.payload = payload;
     }
 
-    @Override
-    public String toString() {
-        return "[header=" + header + ", payload=" + payload + "]";
+    public void set_duplicate(Boolean dupe) {
+        this.duplicate = dupe;
+    }
+    
+    public boolean get_duplicate() {
+        return this.duplicate;
     }
 
+    @Override
+    public String toString() {
+        return "[header=" + header + ", payload=" + payload
+                + ", duplicate=" + duplicate + "]";
+    }
 }

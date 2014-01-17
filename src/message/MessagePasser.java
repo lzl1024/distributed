@@ -76,8 +76,7 @@ public class MessagePasser {
      * @param message
      */
     public void send(Message message) {
-        message.set_id(IDcounter.incrementAndGet());
-        boolean needDuplicate = false;
+        message.set_seqNum(IDcounter.incrementAndGet());
         switch (matchSendRule(message)) {
         case DROP:
             break;
@@ -85,13 +84,13 @@ public class MessagePasser {
             break;
         case DUPLICATE:
             // no break, because at least on message should be sent
-            needDuplicate = true;
+            message.set_duplicate(true);
         default:
             sendAway(message);       
             // TODO send delayed message
             
             // send duplicated message if needed
-            if (needDuplicate) {
+            if (message.get_duplicate()) {
                 sendAway(message);
             }
         }
