@@ -11,8 +11,11 @@ PairlistenTread matches receiveRules and handle it just like what send do.
 TODO major:
 1. handle and match different rules
 2. delay queue, input queue.
+3. auto test
 .... a lot
 
 TODO min:
 1. missing/wrong value check
 2. set kind as enum
+3. close connection or input sometimes?
+4. makefile run (input file location needs to be changed)

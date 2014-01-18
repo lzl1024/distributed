@@ -22,7 +22,7 @@ public class ListenerThread extends Thread {
             
             while(true) {
                 Socket socket = server.accept();
-                System.out.println("INFO: connect to " + socket.getInetAddress());
+                System.out.println("INFO: connect to " + socket.getRemoteSocketAddress());
                 // open a new thread to listen messages coming from the other side
                 new PairListenThread(socket).start();               
             }

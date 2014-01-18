@@ -5,9 +5,12 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.yaml.snakeyaml.Yaml;
@@ -22,10 +25,18 @@ import util.Config;
 public class MessagePasser {
     // instance to call by other classes
     private static volatile MessagePasser instance = null;
+    
+    // node and rules
     public HashMap<String, Node> nodeMap = null;
+    public HashMap<String, ObjectOutputStream> outputStreamMap = null;
     public ArrayList<Rule> sendRules = null;
     public ArrayList<Rule> rcvRules = null;
     public Node myself = null;
+    
+    // queue and other data structure useful in communication
+    public ConcurrentLinkedQueue<Message> delayInMsgQueue;
+    public ConcurrentLinkedQueue<Message> delayOutMsgQueue;
+    public ConcurrentLinkedQueue<Message> rcvBuffer;
     
     // set up an atomic counter for message id
     private AtomicInteger IDcounter;
@@ -61,6 +72,12 @@ public class MessagePasser {
         }
         this.myself = nodeMap.get(local_name);
         IDcounter = new AtomicInteger(0);
+        
+        // initiate data structures
+        outputStreamMap = new HashMap<String, ObjectOutputStream>();
+        delayInMsgQueue = new ConcurrentLinkedQueue<Message>();
+        delayOutMsgQueue = new ConcurrentLinkedQueue<Message>();
+        rcvBuffer = new ConcurrentLinkedQueue<Message>();
     }
     
     /**
@@ -77,18 +94,25 @@ public class MessagePasser {
      */
     public void send(Message message) {
         message.set_seqNum(IDcounter.incrementAndGet());
+
         switch (matchSendRule(message)) {
         case DROP:
+            System.out.println("INFO: Drop Message (Send) " + message);
             break;
         case DELAY:
+            delayOutMsgQueue.add(message);
             break;
         case DUPLICATE:
-            // no break, because at least on message should be sent
+            // no break, because at least one message should be sent
             message.set_duplicate(true);
         default:
             sendAway(message);       
-            // TODO send delayed message
-            
+            // send delayed message
+            synchronized(delayOutMsgQueue) {
+                while (!delayOutMsgQueue.isEmpty()) {
+                    sendAway(delayOutMsgQueue.poll());
+                }
+            }
             // send duplicated message if needed
             if (message.get_duplicate()) {
                 sendAway(message);
@@ -97,9 +121,36 @@ public class MessagePasser {
     }
     
     
+    /**
+     * Send away message to specific destination
+     * @param message
+     */
+    @SuppressWarnings("resource")
     private void sendAway(Message message) {
-        // TODO Auto-generated method stub
+        ObjectOutputStream out;
         
+        try {
+            // build connection if not
+            if (!outputStreamMap.containsKey(message.getDest())) {
+                Node node = nodeMap.get(message.getDest());
+                
+                Socket socket = new Socket(node.getIpAddress(), node.getPort());
+                out = new ObjectOutputStream(socket.getOutputStream());
+                outputStreamMap.put(message.getDest(), out);
+                
+            } else {
+                out = outputStreamMap.get(message.getDest());
+            }
+            
+            // send message
+            out.writeObject(message);
+            out.flush();
+            out.reset();
+            System.out.println("INFO: send message " + message);
+            
+        } catch (IOException e) {
+            System.err.println("ERROR: send message error, the other side may be offline " + message);
+        }
     }
 
     /**
@@ -109,12 +160,22 @@ public class MessagePasser {
      */
     private ACTION matchSendRule(Message message) {
         // TODO Auto-generated method stub
+        // you may want to create Nth list or map for matching
         return ACTION.DEFAULT;
     }
 
+    /**
+     * Receive message from rcvBuffer
+     * @return
+     */
     public ArrayList<Message> receive() {
-        // TODO
-        return null;
+        ArrayList<Message> receiveList = new ArrayList<Message>();
+        synchronized (rcvBuffer) {
+            while (!rcvBuffer.isEmpty()) {
+                receiveList.add(rcvBuffer.poll());
+            }
+        }
+        return receiveList;
     }
     
     public static void main(String[] args) throws FileNotFoundException {

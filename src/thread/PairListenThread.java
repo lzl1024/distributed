@@ -4,6 +4,7 @@ import java.io.ObjectInputStream;
 import java.net.Socket;
 
 import message.Message;
+import message.MessagePasser;
 import record.Rule.ACTION;
 
 /**
@@ -20,25 +21,33 @@ public class PairListenThread extends Thread {
 
     @Override
     public void run() {
+        MessagePasser passer = MessagePasser.getInstance();
         try {
             ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
             while(true) {
                 Message message = (Message)in.readObject();
                 switch (matchReceiveRule(message)) {
                 case DROP:
+                    System.out.println("INFO: Drop Message (Receive) " + message);
                     break;
                 case DELAY:
+                    passer.delayInMsgQueue.add(message);
                     break;
                 case DUPLICATE:
-                    // no break, because at least on message should be received
+                    // no break, because at least one message should be received
                     message.set_duplicate(true);
                 default:
-                    receiveIn(message);       
-                    // TODO receive delayed message
-                    
+                    receiveIn(message, passer);       
+                    // receive delayed message
+                    synchronized(passer.delayInMsgQueue) {
+                        while (!passer.delayInMsgQueue.isEmpty()) {
+                            receiveIn(passer.delayInMsgQueue.poll(), passer);
+                        }
+                    }
+
                     // receive duplicated message if needed
                     if (message.get_duplicate()) {
-                        receiveIn(message);
+                        receiveIn(message, passer);
                     }
                 }   
             }
@@ -48,9 +57,13 @@ public class PairListenThread extends Thread {
         }
     }
 
-    private void receiveIn(Message message) {
-        // TODO Auto-generated method stub
-        
+    /**
+     * Add message to receive buffer
+     * @param message
+     * @param passer
+     */
+    private void receiveIn(Message message, MessagePasser passer) {
+        passer.rcvBuffer.offer(message);
     }
 
     private ACTION matchReceiveRule(Message message) {
