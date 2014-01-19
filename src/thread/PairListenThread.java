@@ -69,6 +69,7 @@ public class PairListenThread extends Thread {
 
     private ACTION matchReceiveRule(Message message) {
         // TODO Auto-generated method stub
+    	MessagePasser.getInstance().checkModified();
     	for (Rule rule : MessagePasser.getInstance().rcvRules){
     		if (rule.isMatch(message)) {
     			return rule.getAction();

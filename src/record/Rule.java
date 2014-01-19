@@ -114,6 +114,39 @@ public class Rule {
 		return false;
 	}
 
+	public boolean equals(Rule r) {  
+		if (!r.getAction().equals(getAction())) return false;
+		
+		if (r.getSrc() != null) {
+			if (!r.getSrc().equals(getSrc())) return false;
+		}else {
+			if (getSrc() != null) return false;
+		}
+		
+		if (r.getDest() != null) {
+			if (!r.getDest().equals(getDest())) return false;
+		}else {
+			if (getDest() != null) return false;
+		}
+
+		if (r.getKind() != null) {
+			if (!r.getKind().equals(getKind())) return false;
+		} else {
+			if (getKind() != null) return false;
+		}
+
+		if (r.getDuplicate() != null) {
+			if (!r.getDuplicate().equals(getDuplicate())) return false;
+		} else {
+			if (getDuplicate() != null) return false;
+		}
+
+		if (r.getId() != getId()) return false;
+		if (r.getNth() != getNth()) return false;
+		if (r.getEveryNth() != getEveryNth()) return false;
+		return true;
+	}
+
 	@Override
 	public String toString() {
 		return "[action=" + action + ", src=" + src + ", dest=" + dest
