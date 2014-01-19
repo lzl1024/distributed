@@ -5,6 +5,7 @@ import java.net.Socket;
 
 import message.Message;
 import message.MessagePasser;
+import record.Rule;
 import record.Rule.ACTION;
 
 /**
@@ -26,6 +27,7 @@ public class PairListenThread extends Thread {
             ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
             while(true) {
                 Message message = (Message)in.readObject();
+                message.set_duplicate(false);
                 switch (matchReceiveRule(message)) {
                 case DROP:
                     System.out.println("INFO: Drop Message (Receive) " + message);
@@ -68,6 +70,11 @@ public class PairListenThread extends Thread {
 
     private ACTION matchReceiveRule(Message message) {
         // TODO Auto-generated method stub
+    	for (Rule rule : MessagePasser.getInstance().rcvRules){
+    		if (rule.isMatch(message)) {
+    			return rule.getAction();
+    		}
+    	}
         return ACTION.DEFAULT;
     }
 }

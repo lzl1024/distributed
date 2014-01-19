@@ -1,5 +1,7 @@
 package record;
 
+import message.Message;
+
 public class Rule {
     public enum ACTION {
         DROP, DELAY, DUPLICATE, DEFAULT
@@ -12,6 +14,7 @@ public class Rule {
     private int id = 0;
     private int Nth = 0;
     private int everyNth = 0;
+    private int matchedTimes = 0;
 
     public ACTION getAction() {
         return action;
@@ -65,6 +68,41 @@ public class Rule {
     public void setEveryNth(int everyNth) {
         this.everyNth = everyNth;
     }
+    
+    public int getMatchedTimes() {
+    	return matchedTimes;
+    }
+    public void setMatchedTimes(int m) {
+    	this.matchedTimes = m;
+    }
+    
+    public boolean isMatch(Message message) {
+    	if (getId() == 0 || getId() == message.get_seqNumr()){
+			if (getSrc() == null || getSrc().equalsIgnoreCase(message.get_source())){
+				if (getDest() == null || getDest().equalsIgnoreCase(message.getDest())){
+					if (getKind() == null || getKind().equalsIgnoreCase(message.getKind())){
+						setMatchedTimes(getMatchedTimes() + 1);
+						if (getNth() != 0) {
+							if (getNth() == getMatchedTimes()) {
+								return true;
+							}else if (getEveryNth() == 0) {
+								return false;
+							}
+						}
+						if (getEveryNth() != 0) {
+								if (getMatchedTimes()%getEveryNth() == 0) {
+									return true;
+								}else return false;
+							}
+						return true;
+					}
+				}
+			}
+		}
+    	
+    	return false;
+    }
+    
     @Override
     public String toString() {
         return "[action=" + action + ", src=" + src + ", dest=" + dest

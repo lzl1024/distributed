@@ -161,6 +161,11 @@ public class MessagePasser {
     private ACTION matchSendRule(Message message) {
         // TODO Auto-generated method stub
         // you may want to create Nth list or map for matching
+    	for (Rule rule : sendRules){
+    		if (rule.isMatch(message)) {
+    			return rule.getAction();
+    		}
+    	}
         return ACTION.DEFAULT;
     }
 
