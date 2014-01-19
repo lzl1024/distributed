@@ -202,6 +202,7 @@ public class MessagePasser {
 		File file = new File(configFileName);
 		long lastModified = file.lastModified();
 		if (lastModified > modified) {
+			modified = lastModified;
 			Yaml yaml = new Yaml();
 			InputStream input;
 			try {
@@ -211,6 +212,8 @@ public class MessagePasser {
 				HashMap<String, Node> newNodeMap = Config.parseNodeMap(map.get("Configuration"));
 				ArrayList<Rule> newSendRules = Config.parseRules(map.get("SendRules"));
 				ArrayList<Rule> newRcvRules = Config.parseRules(map.get("ReceiveRules"));
+				outputStreamMap.clear();
+				
 				for (Rule newRule : newSendRules) {
 					for (Rule oldRule : sendRules) {
 						if (oldRule.equals(newRule)){
