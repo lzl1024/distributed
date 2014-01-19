@@ -9,7 +9,8 @@ public class Message implements Serializable {
     private static final long serialVersionUID = 1L;
     private Header header = null;
     private Object payload = null;
-    private boolean duplicate;
+    private boolean sendDuplicate;
+    private boolean rcvDuplicate;
     
     public class Header implements Serializable {
         /**
@@ -36,7 +37,8 @@ public class Message implements Serializable {
     public Message(String dest, String kind, Object data) {
         this.header = new Header(dest, kind);
         this.payload = data;
-        this.duplicate = false;
+        this.sendDuplicate = false;
+        this.rcvDuplicate = false;
     }
 
     public void set_seqNum(int sequenceNumber) {
@@ -79,17 +81,25 @@ public class Message implements Serializable {
         this.payload = payload;
     }
 
-    public void set_duplicate(Boolean dupe) {
-        this.duplicate = dupe;
+    public void set_sendDuplicate(Boolean dupe) {
+        this.sendDuplicate = dupe;
     }
     
-    public boolean get_duplicate() {
-        return this.duplicate;
+    public boolean get_sendDuplicate() {
+        return this.sendDuplicate;
+    }
+    
+    public void set_rcvDuplicate(Boolean dupe) {
+        this.rcvDuplicate = dupe;
+    }
+    
+    public boolean get_rcvDuplicate() {
+        return this.rcvDuplicate;
     }
 
     @Override
     public String toString() {
         return "[header=" + header + ", payload=" + payload
-                + ", duplicate=" + duplicate + "]";
+                + ", sendDuplicate=" + sendDuplicate + "]";
     }
 }

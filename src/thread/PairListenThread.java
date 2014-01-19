@@ -27,7 +27,6 @@ public class PairListenThread extends Thread {
             ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
             while(true) {
                 Message message = (Message)in.readObject();
-                message.set_duplicate(false);
                 switch (matchReceiveRule(message)) {
                 case DROP:
                     System.out.println("INFO: Drop Message (Receive) " + message);
@@ -37,7 +36,7 @@ public class PairListenThread extends Thread {
                     break;
                 case DUPLICATE:
                     // no break, because at least one message should be received
-                    message.set_duplicate(true);
+                    message.set_rcvDuplicate(true);
                 default:
                     receiveIn(message, passer);       
                     // receive delayed message
@@ -48,7 +47,7 @@ public class PairListenThread extends Thread {
                     }
 
                     // receive duplicated message if needed
-                    if (message.get_duplicate()) {
+                    if (message.get_rcvDuplicate()) {
                         receiveIn(message, passer);
                     }
                 }   

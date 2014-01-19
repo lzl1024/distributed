@@ -59,6 +59,9 @@ public class Config {
                 if (yamlRule.containsKey("EveryNth")) {
                     rule.setEveryNth((Integer)yamlRule.get("EveryNth"));
                 }
+                if (yamlRule.containsKey("Duplicate")) {
+                	rule.setDuplicate(yamlRule.get("Duplicate").toString());
+                }
                 
                 ruleList.add(rule);
             } catch (Exception e) {

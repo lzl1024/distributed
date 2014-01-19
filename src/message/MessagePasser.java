@@ -27,6 +27,7 @@ public class MessagePasser {
     private static volatile MessagePasser instance = null;
     
     // node and rules
+    public long lastModified = 0;
     public HashMap<String, Node> nodeMap = null;
     public HashMap<String, ObjectOutputStream> outputStreamMap = null;
     public ArrayList<Rule> sendRules = null;
@@ -53,7 +54,9 @@ public class MessagePasser {
         Yaml yaml = new Yaml();
         InputStream input = null;
         try {
-            input = new FileInputStream(new File(configuration_filename));
+        	File file = new File(configuration_filename);
+        	lastModified = file.lastModified(); //get the last modification time
+            input = new FileInputStream(file);
             Map<String,  ArrayList<Map<String, Object>>> map = 
                     (Map<String,  ArrayList<Map<String, Object>>>) yaml.load(input);
             nodeMap = Config.parseNodeMap(map.get("Configuration"));
@@ -78,6 +81,9 @@ public class MessagePasser {
         delayInMsgQueue = new ConcurrentLinkedQueue<Message>();
         delayOutMsgQueue = new ConcurrentLinkedQueue<Message>();
         rcvBuffer = new ConcurrentLinkedQueue<Message>();
+        
+      
+
     }
     
     /**
@@ -94,7 +100,7 @@ public class MessagePasser {
      */
     public void send(Message message) {
         message.set_seqNum(IDcounter.incrementAndGet());
-
+        boolean duplicate = false;
         switch (matchSendRule(message)) {
         case DROP:
             System.out.println("INFO: Drop Message (Send) " + message);
@@ -104,9 +110,10 @@ public class MessagePasser {
             break;
         case DUPLICATE:
             // no break, because at least one message should be sent
-            message.set_duplicate(true);
+            //message.set_sendDuplicate(true);
+        	duplicate = true;
         default:
-            sendAway(message);       
+            sendAway(message);    
             // send delayed message
             synchronized(delayOutMsgQueue) {
                 while (!delayOutMsgQueue.isEmpty()) {
@@ -114,7 +121,8 @@ public class MessagePasser {
                 }
             }
             // send duplicated message if needed
-            if (message.get_duplicate()) {
+            if (duplicate) {
+            	message.set_sendDuplicate(true);
                 sendAway(message);
             }
         }
@@ -183,6 +191,10 @@ public class MessagePasser {
         return receiveList;
     }
     
+    public void checkModified () { 
+    	File file = new File("configuration_filename");
+    	long lastModified = file.lastModified();
+    }
     public static void main(String[] args) throws FileNotFoundException {
         if (args.length != 2) {
             System.out.println("Usage: configuration_filename local_name");
