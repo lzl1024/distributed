@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import message.MessagePasser;
-
 /**
  * 
  * The listener thread to listen connection requests from other nodes 
@@ -17,13 +15,10 @@ public class ListenerThread extends Thread {
 	public ListenerThread(ServerSocket server){
 		this.server = server;
 	}
-    @SuppressWarnings("resource")
+
     @Override
     public void run() {
-        MessagePasser passer = MessagePasser.getInstance();
         try {
-            //ServerSocket server = new ServerSocket(passer.myself.getPort());
-            
             while(true) {
                 Socket socket = server.accept();
                 System.out.println("INFO: connect to " + socket.getRemoteSocketAddress());

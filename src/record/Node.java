@@ -36,21 +36,27 @@ public class Node {
     public void setPort(int port) {
         this.port = port;
     }
-    public int equals(Node n) { //if equals return 0; if the name changed return -1; else return 1;
+    
+    /**
+     * Judge whether to nodes are equals
+     * @param n
+     * @return if equals return 0; if the name changed return -1; else return 1
+     */
+    public int equals(Node n) {
     	int v = 0;
     	if (n.getName() != null) {
-    		if (!n.getName().equals(getName())) v = -1;
+    		if (!n.getName().equals(name)) v = -1;
     	}else {
-    		if(getName() != null) 
+    		if(name != null) 
     			v = -1;
-    		}
+    	}
     	if (n.getIpAddress() != null) {
-    		if (!n.getIpAddress().equals(getIpAddress())) v = 1;
+    		if (!n.getIpAddress().equals(ipAddress)) v = 1;
     	}else {
-    		if(getIpAddress() != null)
+    		if(ipAddress != null)
     			v = 1;
     	}
-    	if (n.getPort() != getPort()) {
+    	if (n.getPort() != port) {
     		v = 1;
     	}
     	

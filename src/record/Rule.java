@@ -11,7 +11,7 @@ public class Rule {
 	private String src = null;
 	private String dest = null;
 	private String kind = null; 
-	private String duplicate = null;
+	private Boolean duplicate = null;
 	private int id = 0;
 	private int Nth = 0;
 	private int everyNth = 0;
@@ -77,30 +77,35 @@ public class Rule {
 		this.matchedTimes = m;
 	}
 
-	public String getDuplicate () {
+	public Boolean getDuplicate () {
 		return duplicate;
 	}
 
-	public void setDuplicate (String dup) {
+	public void setDuplicate (Boolean dup) {
 		this.duplicate = dup;
 	}
+	
+	/**
+	 * Check if the rule is matched
+	 * @param message
+	 * @return
+	 */
 	public boolean isMatch(Message message) {
-		if (getDuplicate() == null || (getDuplicate().equalsIgnoreCase("true") && message.get_sendDuplicate()) ||
-				(getDuplicate().equalsIgnoreCase("false") && !message.get_sendDuplicate())) {
-			if (getId() == 0 || getId() == message.get_seqNumr()){
-				if (getSrc() == null || getSrc().equalsIgnoreCase(message.get_source())){
-					if (getDest() == null || getDest().equalsIgnoreCase(message.getDest())){
-						if (getKind() == null || getKind().equalsIgnoreCase(message.getKind())){
-							setMatchedTimes(getMatchedTimes() + 1);
-							if (getNth() != 0) {
-								if (getNth() == getMatchedTimes()) {
+		if (this.duplicate == null || (this.duplicate.equals(message.get_sendDuplicate()))) {
+			if (this.id == 0 || this.id == message.get_seqNumr()){
+				if (this.src == null || this.src.equalsIgnoreCase(message.get_source())){
+					if (this.dest == null || this.dest.equalsIgnoreCase(message.getDest())){
+						if (this.kind == null || this.kind.equalsIgnoreCase(message.getKind())){
+							setMatchedTimes(this.matchedTimes + 1);
+							if (this.Nth != 0) {
+								if (this.Nth == this.matchedTimes) {
 									return true;
-								}else if (getEveryNth() == 0) {
+								}else if (this.everyNth == 0) {
 									return false;
 								}
 							}
-							if (getEveryNth() != 0) {
-								if (getMatchedTimes()%getEveryNth() == 0) {
+							if (this.everyNth != 0) {
+								if (this.matchedTimes % this.everyNth == 0) {
 									return true;
 								}else return false;
 							}
@@ -110,41 +115,44 @@ public class Rule {
 				}
 			}
 		}
-
 		return false;
 	}
 
-	public boolean equals(Rule r) {  
-		if (!r.getAction().equals(getAction())) return false;
+	@Override
+	public boolean equals(Object rule) {
+	    if (!(rule instanceof Rule)) {
+	        return false;
+	    }
+	    
+	    Rule r = (Rule) rule;
+	    
+		if (!r.getAction().equals(action)) return false;
 		
 		if (r.getSrc() != null) {
-			if (!r.getSrc().equals(getSrc())) return false;
+			if (!r.getSrc().equals(src)) return false;
 		}else {
-			if (getSrc() != null) return false;
+			if (src != null) return false;
 		}
 		
 		if (r.getDest() != null) {
-			if (!r.getDest().equals(getDest())) return false;
+			if (!r.getDest().equals(dest)) return false;
 		}else {
-			if (getDest() != null) return false;
+			if (dest != null) return false;
 		}
 
 		if (r.getKind() != null) {
-			if (!r.getKind().equals(getKind())) return false;
+			if (!r.getKind().equals(kind)) return false;
 		} else {
-			if (getKind() != null) return false;
+			if (kind != null) return false;
 		}
 
 		if (r.getDuplicate() != null) {
-			if (!r.getDuplicate().equals(getDuplicate())) return false;
+			if (!r.getDuplicate().equals(duplicate)) return false;
 		} else {
-			if (getDuplicate() != null) return false;
+			if (duplicate != null) return false;
 		}
 
-		if (r.getId() != getId()) return false;
-		if (r.getNth() != getNth()) return false;
-		if (r.getEveryNth() != getEveryNth()) return false;
-		return true;
+		return  r.getId() == getId() && r.getNth() == getNth() && r.getEveryNth() == getEveryNth();
 	}
 
 	@Override

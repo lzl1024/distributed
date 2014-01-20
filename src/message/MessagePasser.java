@@ -91,9 +91,6 @@ public class MessagePasser {
 		delayInMsgQueue = new ConcurrentLinkedQueue<Message>();
 		delayOutMsgQueue = new ConcurrentLinkedQueue<Message>();
 		rcvBuffer = new ConcurrentLinkedQueue<Message>();
-
-
-
 	}
 
 	/**
@@ -121,7 +118,6 @@ public class MessagePasser {
 			break;
 		case DUPLICATE:
 			// no break, because at least one message should be sent
-			//message.set_sendDuplicate(true);
 			duplicate = true;
 		default:
 			sendAway(message);    
@@ -179,8 +175,6 @@ public class MessagePasser {
 	 * @throws IOException 
 	 */
 	private ACTION matchSendRule(Message message) throws IOException {
-		// TODO Auto-generated method stub
-		// you may want to create Nth list or map for matching
 		checkModified();
 		for (Rule rule : sendRules){
 			if (rule.isMatch(message)) {
@@ -204,12 +198,18 @@ public class MessagePasser {
 		return receiveList;
 	}
 
+	/**
+	 * Check if the file is modified
+	 * @throws IOException
+	 */
 	@SuppressWarnings("unchecked")
 	public void checkModified () throws IOException { 
 		File file = new File(configFileName);
 		long lastModified = file.lastModified();
 		int closeServerF = 0;
 		if (lastModified > modified) {
+		    System.out.println("INFO: Configuration file modified! Reload again!");
+		    
 			modified = lastModified;
 			Yaml yaml = new Yaml();
 			InputStream input;
@@ -226,32 +226,30 @@ public class MessagePasser {
 				
 				closeServerF = nodeMap.get(localName).equals(newNodeMap.get(localName));
 				for (Rule newRule : newSendRules) {
-					for (Rule oldRule : sendRules) {
-						if (oldRule.equals(newRule)){
-							newRule.setMatchedTimes(oldRule.getMatchedTimes());
-							break;
-						}
-					}
+	                int matchIndex = -1;
+				    if ((matchIndex = sendRules.indexOf(newRule)) != -1) {
+				        newRule.setMatchedTimes(sendRules.get(matchIndex).getMatchedTimes());
+				    }
 				}
 
 				for (Rule newRule : newRcvRules) {
-					for (Rule oldRule : rcvRules) {
-						if (oldRule.equals(newRule)){
-							newRule.setMatchedTimes(oldRule.getMatchedTimes());
-							break;
-						}
-					}
+	                int matchIndex = -1;
+	                if ((matchIndex = rcvRules.indexOf(newRule)) != -1) {
+                        newRule.setMatchedTimes(rcvRules.get(matchIndex).getMatchedTimes());
+                    }
 				}
+
 				nodeMap = newNodeMap;
 				sendRules = newSendRules;
 				rcvRules = newRcvRules;
 				if (closeServerF > 0){
-				server.close();
-				server = new ServerSocket(myself.getPort());
-				new ListenerThread(server).start();
+				    server.close();
+				    server = new ServerSocket(myself.getPort());
+				    new ListenerThread(server).start();
 				}
+				
+				input.close();
 			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
 				System.err.println("ERROR: The configuration file has been deleted!");
 				e.printStackTrace();
 				System.exit(-1);			

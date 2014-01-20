@@ -14,7 +14,7 @@ Configuration :
     IP   : localhost
     Port : 14255
   - Name : charlie
-    IP   : 128.2.130.19
+    IP   : localhost
     Port : 12998
   - Name : daphnie
     IP   : 192.168.1.87

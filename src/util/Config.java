@@ -60,7 +60,7 @@ public class Config {
                     rule.setEveryNth((Integer)yamlRule.get("EveryNth"));
                 }
                 if (yamlRule.containsKey("Duplicate")) {
-                	rule.setDuplicate(yamlRule.get("Duplicate").toString());
+                	rule.setDuplicate(new Boolean(yamlRule.get("Duplicate").toString()));
                 }
                 
                 ruleList.add(rule);

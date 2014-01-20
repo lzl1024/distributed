@@ -28,7 +28,7 @@ public class PairListenThread extends Thread {
             ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
             while(true) {
                 Message message = (Message)in.readObject();
-                switch (matchReceiveRule(message)) {
+                switch (matchReceiveRule(message, passer)) {
                 case DROP:
                     System.out.println("INFO: Drop Message (Receive) " + message);
                     break;
@@ -68,10 +68,16 @@ public class PairListenThread extends Thread {
         passer.rcvBuffer.offer(message);
     }
 
-    private ACTION matchReceiveRule(Message message) throws IOException {
-        // TODO Auto-generated method stub
-    	MessagePasser.getInstance().checkModified();
-    	for (Rule rule : MessagePasser.getInstance().rcvRules){
+    /**
+     * Check if the rule is matched
+     * @param message
+     * @param passer
+     * @return
+     * @throws IOException
+     */
+    private ACTION matchReceiveRule(Message message, MessagePasser passer) throws IOException {
+        passer.checkModified();
+    	for (Rule rule : passer.rcvRules){
     		if (rule.isMatch(message)) {
     			return rule.getAction();
     		}
