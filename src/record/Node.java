@@ -36,6 +36,26 @@ public class Node {
     public void setPort(int port) {
         this.port = port;
     }
+    public int equals(Node n) { //if equals return 0; if the name changed return -1; else return 1;
+    	int v = 0;
+    	if (n.getName() != null) {
+    		if (!n.getName().equals(getName())) v = -1;
+    	}else {
+    		if(getName() != null) 
+    			v = -1;
+    		}
+    	if (n.getIpAddress() != null) {
+    		if (!n.getIpAddress().equals(getIpAddress())) v = 1;
+    	}else {
+    		if(getIpAddress() != null)
+    			v = 1;
+    	}
+    	if (n.getPort() != getPort()) {
+    		v = 1;
+    	}
+    	
+    	return v;
+    }
     
     @Override
     public String toString() {

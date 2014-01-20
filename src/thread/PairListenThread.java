@@ -1,5 +1,6 @@
 package thread;
 
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.Socket;
 
@@ -67,7 +68,7 @@ public class PairListenThread extends Thread {
         passer.rcvBuffer.offer(message);
     }
 
-    private ACTION matchReceiveRule(Message message) {
+    private ACTION matchReceiveRule(Message message) throws IOException {
         // TODO Auto-generated method stub
     	MessagePasser.getInstance().checkModified();
     	for (Rule rule : MessagePasser.getInstance().rcvRules){

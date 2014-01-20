@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,6 +45,9 @@ public class MessagePasser {
 	//file
 	public long modified = 0;
 	public String configFileName = null;
+	public String localName = null;
+	
+	private ServerSocket server;
 
 
 	/** Constructor of MessagePasser, parse the configuration file
@@ -58,6 +62,7 @@ public class MessagePasser {
 		Yaml yaml = new Yaml();
 		InputStream input = null;
 		configFileName = configuration_filename;
+		localName = local_name;
 		try {
 			File file = new File(configuration_filename);
 			modified = file.lastModified(); //get the last modification time
@@ -102,8 +107,9 @@ public class MessagePasser {
 	/**
 	 * Send the message to the other end
 	 * @param message
+	 * @throws IOException 
 	 */
-	public void send(Message message) {
+	public void send(Message message) throws IOException {
 		message.set_seqNum(IDcounter.incrementAndGet());
 		boolean duplicate = false;
 		switch (matchSendRule(message)) {
@@ -170,8 +176,9 @@ public class MessagePasser {
 	 * Judge if match one send rule
 	 * @param message
 	 * @return return the action which is needed to be taken
+	 * @throws IOException 
 	 */
-	private ACTION matchSendRule(Message message) {
+	private ACTION matchSendRule(Message message) throws IOException {
 		// TODO Auto-generated method stub
 		// you may want to create Nth list or map for matching
 		checkModified();
@@ -198,13 +205,15 @@ public class MessagePasser {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void checkModified () { 
+	public void checkModified () throws IOException { 
 		File file = new File(configFileName);
 		long lastModified = file.lastModified();
+		int closeServerF = 0;
 		if (lastModified > modified) {
 			modified = lastModified;
 			Yaml yaml = new Yaml();
 			InputStream input;
+			
 			try {
 				input = new FileInputStream(file);
 				Map<String,  ArrayList<Map<String, Object>>> map = 
@@ -212,8 +221,10 @@ public class MessagePasser {
 				HashMap<String, Node> newNodeMap = Config.parseNodeMap(map.get("Configuration"));
 				ArrayList<Rule> newSendRules = Config.parseRules(map.get("SendRules"));
 				ArrayList<Rule> newRcvRules = Config.parseRules(map.get("ReceiveRules"));
+				this.myself = newNodeMap.get(localName);
 				outputStreamMap.clear();
 				
+				closeServerF = nodeMap.get(localName).equals(newNodeMap.get(localName));
 				for (Rule newRule : newSendRules) {
 					for (Rule oldRule : sendRules) {
 						if (oldRule.equals(newRule)){
@@ -234,6 +245,11 @@ public class MessagePasser {
 				nodeMap = newNodeMap;
 				sendRules = newSendRules;
 				rcvRules = newRcvRules;
+				if (closeServerF > 0){
+				server.close();
+				server = new ServerSocket(myself.getPort());
+				new ListenerThread(server).start();
+				}
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
 				System.err.println("ERROR: The configuration file has been deleted!");
@@ -243,15 +259,15 @@ public class MessagePasser {
 		}
 	}
 
-	public static void main(String[] args) throws FileNotFoundException {
+	public static void main(String[] args) throws IOException {
 		if (args.length != 2) {
 			System.out.println("Usage: configuration_filename local_name");
 			System.exit(0);
 		}    
 		instance = new MessagePasser(args[0], args[1]);
-
+		instance.server = new ServerSocket(instance.myself.getPort());
 		// set up listener thread to build connection with other nodes
-		new ListenerThread().start();
+		new ListenerThread(instance.server).start();
 		// set up user thread to receive user input
 		new UserThread().start();
 	}

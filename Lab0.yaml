@@ -8,7 +8,7 @@
 Configuration :
   - Name : alice 
     IP   : localhost
-    Port : 12344        # This is the incoming port on which MP will listen
+    Port : 12345        # This is the incoming port on which MP will listen
                         # May be changed for further communication as usual
   - Name : bob 
     IP   : localhost
@@ -31,7 +31,7 @@ SendRules :
   - Action : duplicate      # 3rd message from alice that anyone 
     Src    : alice        # receives will be duplicated
     Nth    : 2
-    EveryNth: 2
+    EveryNth: 7
 
 ReceiveRules :
   - Action : duplicate      # 3rd message from Charlie that anyone 

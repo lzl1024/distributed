@@ -12,13 +12,17 @@ import message.MessagePasser;
  *
  */
 public class ListenerThread extends Thread {
-
+	private ServerSocket server;
+	
+	public ListenerThread(ServerSocket server){
+		this.server = server;
+	}
     @SuppressWarnings("resource")
     @Override
     public void run() {
         MessagePasser passer = MessagePasser.getInstance();
         try {
-            ServerSocket server = new ServerSocket(passer.myself.getPort());
+            //ServerSocket server = new ServerSocket(passer.myself.getPort());
             
             while(true) {
                 Socket socket = server.accept();
@@ -28,7 +32,7 @@ public class ListenerThread extends Thread {
             }
         } catch (IOException e) {
             System.err.println("ERROR: server socket corrupt");
-            e.printStackTrace();
+           // e.printStackTrace();
         }
     }
 
