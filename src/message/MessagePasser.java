@@ -38,6 +38,7 @@ public class MessagePasser {
 	public ConcurrentLinkedQueue<Message> delayInMsgQueue;
 	public ConcurrentLinkedQueue<Message> delayOutMsgQueue;
 	public ConcurrentLinkedQueue<Message> rcvBuffer;
+	public ArrayList<Message> receiveList;
 
 	// set up an atomic counter for message id
 	private AtomicInteger IDcounter;
@@ -91,6 +92,7 @@ public class MessagePasser {
 		delayInMsgQueue = new ConcurrentLinkedQueue<Message>();
 		delayOutMsgQueue = new ConcurrentLinkedQueue<Message>();
 		rcvBuffer = new ConcurrentLinkedQueue<Message>();
+		receiveList = new ArrayList<Message>();
 	}
 
 	/**
@@ -188,14 +190,16 @@ public class MessagePasser {
 	 * Receive message from rcvBuffer
 	 * @return
 	 */
-	public ArrayList<Message> receive() {
-		ArrayList<Message> receiveList = new ArrayList<Message>();
+	//public ArrayList<Message> receive() {
+	public Message receive() {
+		
 		synchronized (rcvBuffer) {
 			while (!rcvBuffer.isEmpty()) {
 				receiveList.add(rcvBuffer.poll());
 			}
 		}
-		return receiveList;
+		if (receiveList.isEmpty()) return null;
+		return receiveList.remove(0);
 	}
 
 	/**
