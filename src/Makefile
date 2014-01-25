@@ -1,12 +1,12 @@
-Configfilename = ../Lab0.yaml
-Local_name = alice
+Configfilename = /afs/andrew.cmu.edu/usr5/zhuolinl/18842/Lab0.yaml
+Name = alice
 
 all:	
-	javac -cp .:lib/snakeyaml-1.13.jar message/*.java record/*.java io/*.java thread/*.java \
+	javac -cp .:lib/snakeyaml-1.13.jar message/*.java record/*.java thread/*.java \
 	util/*.java
 
 run:	all
-	java -cp .:lib/snakeyaml-1.13.jar message.MessagePasser ${Configfilename} ${Local_name}	
+	java -cp .:lib/snakeyaml-1.13.jar message.MessagePasser ${Configfilename} ${Name}	
 
 clean:
 	find . -name *.class | xargs rm -rf >> a.out
