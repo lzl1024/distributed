@@ -22,6 +22,8 @@ import record.Rule.ACTION;
 import thread.ListenerThread;
 import thread.UserThread;
 import util.Config;
+import clock.ClockService;
+import clock.ClockService.CLOCK_TYPE;
 
 public class MessagePasser {
 	// instance to call by other classes
@@ -43,10 +45,13 @@ public class MessagePasser {
 	// set up an atomic counter for message id
 	private AtomicInteger IDcounter;
 
-	//file
+	// file
 	public long modified = 0;
 	public String configFileName = null;
 	public String localName = null;
+	
+	// clock
+	public CLOCK_TYPE clockType;
 	
 	private ServerSocket server;
 
@@ -73,8 +78,12 @@ public class MessagePasser {
 			nodeMap = Config.parseNodeMap(map.get("Configuration"));
 			sendRules = Config.parseRules(map.get("SendRules"));
 			rcvRules = Config.parseRules(map.get("ReceiveRules"));
+			
+			// get clock type
+			clockType = CLOCK_TYPE.valueOf(map.get("Clock").get(0).get("Type").toString());
+			
 		} catch (FileNotFoundException e) {
-			System.err.println("ERROR: Cannot find the configuration file!");
+			System.err.println("ERROR: Cannot find/read the configuration file!");
 			e.printStackTrace();
 			System.exit(-1);
 		}
@@ -84,10 +93,10 @@ public class MessagePasser {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		this.myself = nodeMap.get(local_name);
-		IDcounter = new AtomicInteger(0);
 
 		// initiate data structures
+	    this.myself = nodeMap.get(local_name);
+	    IDcounter = new AtomicInteger(0);
 		outputStreamMap = new HashMap<String, ObjectOutputStream>();
 		delayInMsgQueue = new ConcurrentLinkedQueue<Message>();
 		delayOutMsgQueue = new ConcurrentLinkedQueue<Message>();
@@ -146,6 +155,11 @@ public class MessagePasser {
 	private void sendAway(Message message) {
 		ObjectOutputStream out;
 
+		// update the timestamp message when we truly send the message
+		if (message instanceof TimeStampMessage) {
+		    ((TimeStampMessage)message).setTimeStamp(ClockService.getInstance().newTime());
+		}
+		//System.out.println("INFO: before message " + message);
 		try {
 			// build connection if not
 			if (!outputStreamMap.containsKey(message.getDest())) {
@@ -159,12 +173,11 @@ public class MessagePasser {
 				out = outputStreamMap.get(message.getDest());
 			}
 
+			System.out.println("INFO: send message " + message);
 			// send message
 			out.writeObject(message);
 			out.flush();
 			out.reset();
-			System.out.println("INFO: send message " + message);
-
 		} catch (IOException e) {
 			System.err.println("ERROR: send message error, the other side may be offline " + message);
 		}
@@ -190,16 +203,8 @@ public class MessagePasser {
 	 * Receive message from rcvBuffer
 	 * @return
 	 */
-	//public ArrayList<Message> receive() {
 	public Message receive() {
-		
-		synchronized (rcvBuffer) {
-			while (!rcvBuffer.isEmpty()) {
-				receiveList.add(rcvBuffer.poll());
-			}
-		}
-		if (receiveList.isEmpty()) return null;
-		return receiveList.remove(0);
+		return rcvBuffer.poll();
 	}
 
 	/**
@@ -217,7 +222,7 @@ public class MessagePasser {
 			modified = lastModified;
 			Yaml yaml = new Yaml();
 			InputStream input;
-			
+			// parse configuration file again
 			try {
 				input = new FileInputStream(file);
 				Map<String,  ArrayList<Map<String, Object>>> map = 
@@ -229,6 +234,7 @@ public class MessagePasser {
 				outputStreamMap.clear();
 				
 				closeServerF = nodeMap.get(localName).equals(newNodeMap.get(localName));
+                // match and update rules in the new configuration file with the old one
 				for (Rule newRule : newSendRules) {
 	                int matchIndex = -1;
 				    if ((matchIndex = sendRules.indexOf(newRule)) != -1) {
@@ -261,13 +267,15 @@ public class MessagePasser {
 		}
 	}
 
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws Exception {
 		if (args.length != 2) {
 			System.out.println("Usage: configuration_filename local_name");
 			System.exit(0);
 		}    
 		instance = new MessagePasser(args[0], args[1]);
 		instance.server = new ServerSocket(instance.myself.getPort());
+		// start clock
+		ClockService.createClock(instance.clockType);
 		// set up listener thread to build connection with other nodes
 		new ListenerThread(instance.server).start();
 		// set up user thread to receive user input

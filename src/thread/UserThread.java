@@ -3,8 +3,9 @@ package thread;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
-import message.Message;
 import message.MessagePasser;
+import message.TimeStampMessage;
+import clock.ClockService;
 
 /**
  * 
@@ -18,13 +19,10 @@ public class UserThread extends Thread {
         BufferedReader in = null;
         MessagePasser passer = MessagePasser.getInstance();
         try {
-            // TODO: you may want add some auto test here, so you can change the userTread's constructor
-            // to get the input file name for each user. And read the file in specific format "Send bob"....
-            
             
             while (true) {
                 // wait user input
-                System.out.println("Please enter your scenario \t 1: Send, 2: Receive");
+                System.out.println("Please enter your scenario \t 1: Send, 2: Receive, 3: Local Time");
                 in = new BufferedReader(new InputStreamReader(System.in));
                 String cmdInput = in.readLine();
                 // handle with "send"
@@ -42,11 +40,13 @@ public class UserThread extends Thread {
                     String data = in.readLine();
 
                     // create and send message
-                    Message msg = new Message(dest, kind, data);
+                    TimeStampMessage msg = new TimeStampMessage(dest, kind, data);
                     msg.set_source(passer.myself.getName());
                     passer.send(msg);
                 } else if (cmdInput.equals("2")) {
-                    System.out.println("Receive Messages : " + passer.receive());
+                    System.out.println("Receive Message : " + passer.receive());
+                } else if (cmdInput.equals("3")) {
+                    System.out.println("Local Time : " + ClockService.getInstance().getTime());
                 }
             }
         } catch (Exception e) {

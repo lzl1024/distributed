@@ -3,7 +3,7 @@ Name = alice
 
 all:	
 	javac -cp .:lib/snakeyaml-1.13.jar message/*.java record/*.java thread/*.java \
-	util/*.java
+	util/*.java clock/*.java
 
 run:	all
 	java -cp .:lib/snakeyaml-1.13.jar message.MessagePasser ${Configfilename} ${Name}	

@@ -37,6 +37,11 @@ public class Config {
      */
     public static ArrayList<Rule> parseRules(ArrayList<Map<String, Object>> element) {
         ArrayList<Rule> ruleList = new ArrayList<Rule>();
+        // handle situation where there is no rule.
+        if (element == null) {
+            return ruleList;
+        }
+        
         for (Map<String, Object> yamlRule : element) {
             try {
                 Rule rule = new Rule();

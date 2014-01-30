@@ -7,10 +7,10 @@ public class Message implements Serializable {
      * 
      */
     private static final long serialVersionUID = 1L;
-    private Header header = null;
-    private Object payload = null;
-    private boolean sendDuplicate;
-    private boolean rcvDuplicate;
+    protected Header header = null;
+    protected Object payload = null;
+    protected boolean sendDuplicate;
+    protected boolean rcvDuplicate;
     
     public class Header implements Serializable {
         /**

@@ -4,8 +4,11 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.Socket;
 
+import clock.ClockService;
+
 import message.Message;
 import message.MessagePasser;
+import message.TimeStampMessage;
 import record.Rule;
 import record.Rule.ACTION;
 
@@ -28,6 +31,13 @@ public class PairListenThread extends Thread {
             ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
             while(true) {
                 Message message = (Message)in.readObject();
+                
+                // update time if message is timestamp message
+                if (message instanceof TimeStampMessage) {
+                    ClockService.getInstance().updateLocalTime((TimeStampMessage)message);
+                }
+                
+                // match and handle receive rules
                 switch (matchReceiveRule(message, passer)) {
                 case DROP:
                     System.out.println("INFO: Drop Message (Receive) " + message);
