@@ -22,7 +22,7 @@ public class UserThread extends Thread {
             
             while (true) {
                 // wait user input
-                System.out.println("Please enter your scenario \t 1: Send, 2: Receive, 3: Local Time");
+                System.out.println("Please enter your scenario \t 1: Send, 2: Receive, 3: Local Time, 4: Send with Log");
                 in = new BufferedReader(new InputStreamReader(System.in));
                 String cmdInput = in.readLine();
                 // handle with "send"
@@ -47,6 +47,35 @@ public class UserThread extends Thread {
                     System.out.println("Receive Message : " + passer.receive());
                 } else if (cmdInput.equals("3")) {
                     System.out.println("Local Time : " + ClockService.getInstance().getTime());
+                } else if (cmdInput.equals("4")){
+                	System.out.println("Please enter your dest:");
+                    String dest = in.readLine();
+                    while (!passer.nodeMap.containsKey(dest)) {
+                        System.out.println("Your Dest has not been registered, enter again:");
+                        dest = in.readLine();
+                    }
+                    System.out.println("Please Enter your Logger: ");
+                    String destLogger = in.readLine();
+                    while (!passer.nodeMap.containsKey(dest)) {
+                        System.out.println("Your Dest has not been registered, enter again:");
+                        destLogger = in.readLine();
+                    }
+                    
+                    System.out.println("Please enter the kind:");
+                    String kind = in.readLine();
+                    System.out.println("Please enter the data:");
+                    String data = in.readLine();
+
+                    // create and send message
+                    TimeStampMessage msg = new TimeStampMessage(dest, kind, data);
+                    msg.set_source(passer.myself.getName());
+                    passer.send(msg);
+                    
+                    // send to logger
+                    TimeStampMessage msg2 = new TimeStampMessage(destLogger, kind, data);
+                    msg2.set_source(passer.myself.getName());
+                    msg2.setDestNode(dest);
+                    passer.send(msg);
                 }
             }
         } catch (Exception e) {

@@ -28,7 +28,6 @@ public class LoggerThread extends Thread{
                     // get messages
                     list = (ArrayList<Message>)logger.showMessages();
                     for(Message m: list){
-                    	if(m instanceof TimeStampMessage)
                     	System.out.println(m.toString());
                     }
                 }
