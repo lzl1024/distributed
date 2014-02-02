@@ -118,7 +118,8 @@ public class MessagePasser {
 	/**
 	 * Send the message to the other end
 	 * @param message
-	 * @throws IOException 
+	 * @param isLog  if user wants explicitly log the message
+	 * @throws IOException
 	 */
 	public void send(Message message, boolean isLog) throws IOException {
 		message.set_seqNum(IDcounter.incrementAndGet());
@@ -214,10 +215,15 @@ public class MessagePasser {
 
 	/**
 	 * Receive message from rcvBuffer
+	 * @param isLog  if user wants to explicitly log the message
 	 * @return
 	 */
-	public Message receive() {
-		return rcvBuffer.poll();
+	public Message receive(Boolean isLog) {
+	    Message msg = rcvBuffer.poll();
+	    if (isLog) {
+	        Logger.log(Type.INFO, msg);
+	    }
+		return msg;
 	}
 
 	/**

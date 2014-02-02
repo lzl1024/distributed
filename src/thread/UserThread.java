@@ -24,19 +24,21 @@ public class UserThread extends Thread {
             while (true) {
                 // wait user input
                 System.out
-                        .println("Please enter your scenario \t 1: Send, 2: Receive, 3: Local Time, 4: Send with Log");
+                        .println("Please enter your scenario \t 1: Send, 2: Receive, 3: Local Time, 4: Send with Log, 5: Receive with Log");
                 in = new BufferedReader(new InputStreamReader(System.in));
                 String cmdInput = in.readLine();
                 // handle with "send"
                 if (cmdInput.equals("1")) {
                     sendMessage(passer, in, false);
                 } else if (cmdInput.equals("2")) {
-                    System.out.println("Receive Message : " + passer.receive());
+                    System.out.println("Receive Message : " + passer.receive(false));
                 } else if (cmdInput.equals("3")) {
                     System.out.println("Local Time : "
                             + ClockService.getInstance().getTime());
                 } else if (cmdInput.equals("4")) {
                     sendMessage(passer, in, true);
+                } else if (cmdInput.equals("5")) {
+                    passer.receive(true);
                 }
             }
         } catch (Exception e) {
