@@ -14,6 +14,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import logging.Logger;
+import logging.Logger.Type;
+
 import org.yaml.snakeyaml.Yaml;
 
 import record.Node;
@@ -117,12 +120,13 @@ public class MessagePasser {
 	 * @param message
 	 * @throws IOException 
 	 */
-	public void send(Message message) throws IOException {
+	public void send(Message message, boolean isLog) throws IOException {
 		message.set_seqNum(IDcounter.incrementAndGet());
 		boolean duplicate = false;
 		switch (matchSendRule(message)) {
 		case DROP:
 			System.out.println("INFO: Drop Message (Send) " + message);
+			Logger.log(Type.SEVERE, message);
 			break;
 		case DELAY:
 			delayOutMsgQueue.add(message);
@@ -135,14 +139,22 @@ public class MessagePasser {
 			// send delayed message
 			synchronized(delayOutMsgQueue) {
 				while (!delayOutMsgQueue.isEmpty()) {
-					sendAway(delayOutMsgQueue.poll());
+				    Message msg = delayOutMsgQueue.poll();
+					sendAway(msg);
+				    Logger.log(Type.SEVERE, message);
 				}
 			}
 			// send duplicated message if needed
 			if (duplicate) {
 				message.set_sendDuplicate(true);
 				sendAway(message);
+	            Logger.log(Type.SEVERE, message);
 			}
+		}
+		
+		// if user wants to explicit log the msg in info level
+		if (isLog) {
+		    Logger.log(Type.INFO, message);
 		}
 	}
 
@@ -159,7 +171,7 @@ public class MessagePasser {
 		if (message instanceof TimeStampMessage) {
 		    ((TimeStampMessage)message).setTimeStamp(ClockService.getInstance().newTime());
 		}
-		//System.out.println("INFO: before message " + message);
+		
 		try {
 			// build connection if not
 			if (!outputStreamMap.containsKey(message.getDest())) {
@@ -174,10 +186,11 @@ public class MessagePasser {
 			}
 
 			System.out.println("INFO: send message " + message);
+
 			// send message
 			out.writeObject(message);
 			out.flush();
-			out.reset();
+			out.reset();			
 		} catch (IOException e) {
 			System.err.println("ERROR: send message error, the other side may be offline " + message);
 		}

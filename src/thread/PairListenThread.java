@@ -6,6 +6,8 @@ import java.net.Socket;
 
 import clock.ClockService;
 
+import logging.Logger;
+import logging.Logger.Type;
 import message.Message;
 import message.MessagePasser;
 import message.TimeStampMessage;
@@ -32,15 +34,11 @@ public class PairListenThread extends Thread {
             while(true) {
                 Message message = (Message)in.readObject();
                 
-                // update time if message is timestamp message
-                if (message instanceof TimeStampMessage) {
-                    ClockService.getInstance().updateLocalTime((TimeStampMessage)message);
-                }
-                
                 // match and handle receive rules
                 switch (matchReceiveRule(message, passer)) {
                 case DROP:
                     System.out.println("INFO: Drop Message (Receive) " + message);
+                    Logger.log(Type.SEVERE, message);
                     break;
                 case DELAY:
                     passer.delayInMsgQueue.add(message);
@@ -53,13 +51,16 @@ public class PairListenThread extends Thread {
                     // receive delayed message
                     synchronized(passer.delayInMsgQueue) {
                         while (!passer.delayInMsgQueue.isEmpty()) {
-                            receiveIn(passer.delayInMsgQueue.poll(), passer);
+                            Message msg = passer.delayInMsgQueue.poll();
+                            receiveIn(msg, passer);
+                            Logger.log(Type.SEVERE, msg);
                         }
                     }
 
                     // receive duplicated message if needed
                     if (message.get_rcvDuplicate()) {
                         receiveIn(message, passer);
+                        Logger.log(Type.SEVERE, message);
                     }
                 }   
             }
@@ -75,6 +76,10 @@ public class PairListenThread extends Thread {
      * @param passer
      */
     private void receiveIn(Message message, MessagePasser passer) {
+        // update time if message is timestamp message
+        if (message instanceof TimeStampMessage) {
+            ClockService.getInstance().updateLocalTime((TimeStampMessage)message);
+        }
         passer.rcvBuffer.offer(message);
     }
 
