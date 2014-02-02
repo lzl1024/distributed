@@ -25,9 +25,14 @@ public class LoggerThread extends Thread{
                 if (cmdInput.equals("1")) {
                     // get messages
                     list =  (ArrayList<TimeStampMessage>)logger.showMessages();
-                    for(Message m: list){
-                    	System.out.println(m.toString());
+                    for(int i = 0; i < list.size()-1;i++){
+                    	System.out.println(list.get(i).toString());
+                    	int ret = list.get(i).compareTo(list.get(i+1));
+                    	if(ret == 0)
+                    		System.out.println("||");
+                    	else System.out.println("->");
                     }
+                    System.out.println(list.get(list.size()-1).toString());
                 }
             }
         } catch (Exception e) {
