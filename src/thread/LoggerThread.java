@@ -5,17 +5,15 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 import logging.Logger;
-import message.MessagePasser;
-import message.TimeStampMessage;
 import message.Message;
-import clock.ClockService;
+import message.TimeStampMessage;
 
 public class LoggerThread extends Thread{
 	 @Override
     public void run() {
         BufferedReader in = null;
         Logger logger = Logger.getInstance();
-        ArrayList<Message> list;
+        ArrayList<TimeStampMessage> list;
         try {
             
             while (true) {
@@ -26,7 +24,7 @@ public class LoggerThread extends Thread{
                 // handle with "print out log"
                 if (cmdInput.equals("1")) {
                     // get messages
-                    list = (ArrayList<Message>)logger.showMessages();
+                    list =  (ArrayList<TimeStampMessage>)logger.showMessages();
                     for(Message m: list){
                     	System.out.println(m.toString());
                     }

@@ -4,15 +4,14 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.Socket;
 
-import clock.ClockService;
-
 import logging.Logger;
-import logging.Logger.Type;
 import message.Message;
+import message.Message.Type;
 import message.MessagePasser;
 import message.TimeStampMessage;
 import record.Rule;
 import record.Rule.ACTION;
+import clock.ClockService;
 
 /**
  * 

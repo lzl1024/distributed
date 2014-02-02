@@ -1,15 +1,11 @@
 package thread;
 
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.Socket;
 
 import logging.Logger;
 import message.Message;
-import message.MessagePasser;
 import message.TimeStampMessage;
-import record.Rule;
-import record.Rule.ACTION;
 import clock.ClockService;
 
 

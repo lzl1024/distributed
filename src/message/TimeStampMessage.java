@@ -1,8 +1,10 @@
 package message;
 
+import clock.LogicalTimeStamp;
 import clock.TimeStamp;
+import clock.VectorTimeStamp;
 
-public class TimeStampMessage<E> extends Message implements Comparable<TimeStamp<E>>{
+public class TimeStampMessage extends Message implements Comparable<TimeStampMessage>{
 
     /**
      * 
@@ -43,8 +45,13 @@ public class TimeStampMessage<E> extends Message implements Comparable<TimeStamp
     }
 
 	@Override
-	public int compareTo(TimeStamp<E> o) {
-		return this.compareTo(o);
-		// TODO Auto-generated method stub
+	public int compareTo(TimeStampMessage o) {
+	    TimeStamp<?> stamp = o.timeStamp;
+	    if (stamp instanceof LogicalTimeStamp) {
+	        return ((LogicalTimeStamp)this.timeStamp).compareTo((LogicalTimeStamp)stamp);
+	    } else if (stamp instanceof VectorTimeStamp) {
+	        return ((VectorTimeStamp)this.timeStamp).compareTo((VectorTimeStamp)stamp);
+	    }
+	    return 0;
 	}
 }

@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import logging.Logger;
-import logging.Logger.Type;
+import message.Message.Type;
 
 import org.yaml.snakeyaml.Yaml;
 
@@ -164,7 +164,7 @@ public class MessagePasser {
 	 * Send away message to specific destination
 	 * @param message
 	 */
-	@SuppressWarnings("resource")
+	@SuppressWarnings({ "resource"})
 	private void sendAway(Message message) {
 		ObjectOutputStream out;
 

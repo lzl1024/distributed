@@ -11,6 +11,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -22,7 +23,6 @@ import message.TimeStampMessage;
 import org.yaml.snakeyaml.Yaml;
 
 import record.Node;
-import record.Rule;
 import thread.LoggerListenerSocketThread;
 import thread.LoggerThread;
 import util.Config;
@@ -125,7 +125,7 @@ public class Logger{
 		while(rcvBuffer.size()>0){
 			this.receiveList.add((TimeStampMessage)rcvBuffer.poll());
 		}
-		Collections.sort(this.receiveList);
+		Collections.sort((List<TimeStampMessage>)this.receiveList);
 		return receiveList;
 	}
 	/**
@@ -136,7 +136,6 @@ public class Logger{
 	public void checkModified () throws IOException { 
 		File file = new File(configFileName);
 		long lastModified = file.lastModified();
-		int closeServerF = 0;
 		if (lastModified > modified) {
 		    System.out.println("INFO: Configuration file modified! Reload again!");
 		    
@@ -149,12 +148,8 @@ public class Logger{
 				Map<String,  ArrayList<Map<String, Object>>> map = 
 						(Map<String,  ArrayList<Map<String, Object>>>) yaml.load(input);
 				HashMap<String, Node> newNodeMap = Config.parseNodeMap(map.get("Configuration"));
-				ArrayList<Rule> newSendRules = Config.parseRules(map.get("SendRules"));
-				ArrayList<Rule> newRcvRules = Config.parseRules(map.get("ReceiveRules"));
 				this.myself = newNodeMap.get(localName);
 				outputStreamMap.clear();
-				
-				closeServerF = nodeMap.get(localName).equals(newNodeMap.get(localName));
 				
 				input.close();
 			} catch (FileNotFoundException e) {
@@ -176,7 +171,8 @@ public class Logger{
 			if (!passer.outputStreamMap.containsKey(name)) {
 				Node node = passer.nodeMap.get(name);
 
-				Socket socket = new Socket(node.getIpAddress(), node.getPort());
+				@SuppressWarnings("resource")
+                Socket socket = new Socket(node.getIpAddress(), node.getPort());
 				out = new ObjectOutputStream(socket.getOutputStream());
 				passer.outputStreamMap.put(name, out);
 
