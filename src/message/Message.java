@@ -11,22 +11,34 @@ public class Message implements Serializable {
     protected Object payload = null;
     protected boolean sendDuplicate;
     protected boolean rcvDuplicate;
-    
+
+	public enum Type {
+	    INFO, SEVERE, ERROR
+	}
+
     public class Header implements Serializable {
         /**
          * 
          */
+
         private static final long serialVersionUID = 1L;
         private int sequenceNumber;
         private String source;
         private String dest;
         private String kind;
+        private Type type;
+        public Header(String dest, String kind, Type type) {
+            this.dest = dest;
+            this.kind = kind;
+            this.type = type;
+        }
         
         public Header(String dest, String kind) {
             this.dest = dest;
             this.kind = kind;
+            this.type = Type.INFO;
         }
-
+        
         @Override
         public String toString() {
             return "[sequenceNumber=" + sequenceNumber + ", source="
@@ -41,6 +53,13 @@ public class Message implements Serializable {
         this.rcvDuplicate = false;
     }
 
+    public Message(String dest, String kind, Object data, Type type) {
+        this.header = new Header(dest, kind, type);
+        this.payload = data;
+        this.sendDuplicate = false;
+        this.rcvDuplicate = false;
+    }
+    
     public void set_seqNum(int sequenceNumber) {
         this.header.sequenceNumber = sequenceNumber;
     }

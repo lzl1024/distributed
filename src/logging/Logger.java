@@ -7,13 +7,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import message.Message;
 import message.MessagePasser;
+import message.TimeStampMessage;
 
 import org.yaml.snakeyaml.Yaml;
 
@@ -26,11 +29,6 @@ import clock.ClockService;
 import clock.ClockService.CLOCK_TYPE;
 
 public class Logger{
-
-	public enum Type {
-	    INFO, SEVERE, ERROR
-	}
-
 	/** Constructor of , parse the configuration file
 	 *  and build the initial connection
 	 * 
@@ -58,7 +56,6 @@ public class Logger{
 	public CLOCK_TYPE clockType;
 	
 	private ServerSocket server;
-
 
 	/** Constructor of MessagePasser, parse the configuration file
 	 *  and build the initial connection
@@ -127,6 +124,7 @@ public class Logger{
 		while(rcvBuffer.size()>0){
 			this.receiveList.add(rcvBuffer.poll());
 		}
+		Collections.sort(this.receiveList);
 		return receiveList;
 	}
 	/**
@@ -166,13 +164,31 @@ public class Logger{
 		}
 	}
 
-	public static void log(Type t, Message m){
+	public static void log(Message message){
 		MessagePasser passer = MessagePasser.getInstance();
+		ObjectOutputStream out;
+		String name = "Logger";
+		//System.out.println("INFO: before message " + message);
 		try {
-			passer.send(m);
+			// build connection if not
+			if (!passer.outputStreamMap.containsKey(name)) {
+				Node node = passer.nodeMap.get(name);
+
+				Socket socket = new Socket(node.getIpAddress(), node.getPort());
+				out = new ObjectOutputStream(socket.getOutputStream());
+				passer.outputStreamMap.put(name, out);
+
+			} else {
+				out = passer.outputStreamMap.get(name);
+			}
+
+			System.out.println("INFO: send message " + message);
+			// send message
+			out.writeObject(message);
+			out.flush();
+			out.reset();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.err.println("ERROR: send message error, the other side may be offline " + message);
 		}
 	}
 	
