@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import message.Message;
+import message.Message.Type;
 import message.MessagePasser;
 import message.TimeStampMessage;
 
@@ -164,10 +165,11 @@ public class Logger{
 		}
 	}
 
-	public static void log(Message message){
+	public static void log(Type type, Message message){
 		MessagePasser passer = MessagePasser.getInstance();
 		ObjectOutputStream out;
 		String name = "Logger";
+		message.setType(type);
 		//System.out.println("INFO: before message " + message);
 		try {
 			// build connection if not

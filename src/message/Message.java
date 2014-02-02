@@ -13,7 +13,7 @@ public class Message implements Serializable {
     protected boolean rcvDuplicate;
 
 	public enum Type {
-	    INFO, SEVERE, ERROR
+	    INFO, SEVERE, ERROR, DEFAULT
 	}
 
     public class Header implements Serializable {
@@ -36,10 +36,18 @@ public class Message implements Serializable {
         public Header(String dest, String kind) {
             this.dest = dest;
             this.kind = kind;
-            this.type = Type.INFO;
+            this.type = Type.DEFAULT;
         }
         
-        @Override
+        public Type getType() {
+			return type;
+		}
+
+		public void setType(Type type) {
+			this.type = type;
+		}
+
+		@Override
         public String toString() {
             return "[sequenceNumber=" + sequenceNumber + ", source="
                     + source + ", dest=" + dest + ", kind=" + kind + "]";
@@ -116,6 +124,14 @@ public class Message implements Serializable {
         return this.rcvDuplicate;
     }
 
+
+    public Type getType() {
+		return this.header.getType();
+	}
+
+	public void setType(Type type) {
+		this.header.setType(type);
+	}
     @Override
     public String toString() {
         return "[header=" + header + ", payload=" + payload
