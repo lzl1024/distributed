@@ -2,7 +2,7 @@ package message;
 
 import clock.TimeStamp;
 
-public class TimeStampMessage extends Message{
+public class TimeStampMessage<E> extends Message implements Comparable<TimeStamp<E>>{
 
     /**
      * 
@@ -41,4 +41,10 @@ public class TimeStampMessage extends Message{
                 + header + ", payload=" + payload + ", sendDuplicate="
                 + sendDuplicate + "]";
     }
+
+	@Override
+	public int compareTo(TimeStamp<E> o) {
+		return this.compareTo(o);
+		// TODO Auto-generated method stub
+	}
 }

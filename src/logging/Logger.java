@@ -45,7 +45,7 @@ public class Logger{
 
 	// queue and other data structure useful in communication
 	public ConcurrentLinkedQueue<Message> rcvBuffer;
-	public ArrayList<Message> receiveList;
+	public ArrayList<TimeStampMessage> receiveList;
 
 	// file
 	public long modified = 0;
@@ -97,7 +97,7 @@ public class Logger{
 	    this.myself = nodeMap.get(local_name);
 		outputStreamMap = new HashMap<String, ObjectOutputStream>();
 		rcvBuffer = new ConcurrentLinkedQueue<Message>();
-		receiveList = new ArrayList<Message>();
+		receiveList = new ArrayList<TimeStampMessage>();
 	}
 
 	/**
@@ -120,9 +120,9 @@ public class Logger{
 	 * Show all the message that has been received.
 	 * @return ArrayList<Message>
 	 */
-	public ArrayList<Message> showMessages(){
+	public ArrayList<TimeStampMessage> showMessages(){
 		while(rcvBuffer.size()>0){
-			this.receiveList.add(rcvBuffer.poll());
+			this.receiveList.add((TimeStampMessage)rcvBuffer.poll());
 		}
 		Collections.sort(this.receiveList);
 		return receiveList;
