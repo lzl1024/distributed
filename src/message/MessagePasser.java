@@ -123,6 +123,12 @@ public class MessagePasser {
 	 */
 	public void send(Message message, boolean isLog) throws IOException {
 		message.set_seqNum(IDcounter.incrementAndGet());
+		
+	    // update the timestamp
+        if (message instanceof TimeStampMessage) {
+            ((TimeStampMessage)message).setTimeStamp(ClockService.getInstance().newTime());
+        }
+			
 		boolean duplicate = false;
 		switch (matchSendRule(message)) {
 		case DROP:
@@ -167,11 +173,6 @@ public class MessagePasser {
 	@SuppressWarnings({ "resource"})
 	private void sendAway(Message message) {
 		ObjectOutputStream out;
-
-		// update the timestamp message when we truly send the message
-		if (message instanceof TimeStampMessage) {
-		    ((TimeStampMessage)message).setTimeStamp(ClockService.getInstance().newTime());
-		}
 		
 		try {
 			// build connection if not

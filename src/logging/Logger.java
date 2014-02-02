@@ -25,7 +25,6 @@ import record.Node;
 import thread.LoggerListenerSocketThread;
 import thread.LoggerThread;
 import util.Config;
-import clock.ClockService;
 import clock.ClockService.CLOCK_TYPE;
 
 public class Logger{
@@ -170,15 +169,6 @@ public class Logger{
 		ObjectOutputStream out;
 		String name = "Logger";
 		message.setType(type);
-		
-		// add current timestamp if there is not
-		if (message instanceof TimeStampMessage) {
-		    TimeStampMessage msg = (TimeStampMessage) message;
-		    if (msg.getTimeStamp() == null) {
-		        msg.setTimeStamp(ClockService.getInstance().getTime());
-		    }
-		}
-		
 		
 		try {
 			// build connection if not

@@ -4,8 +4,9 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 
+import clock.ClockService.CLOCK_TYPE;
+
 import logging.Logger;
-import message.Message;
 import message.TimeStampMessage;
 
 public class LoggerThread extends Thread{
@@ -26,18 +27,43 @@ public class LoggerThread extends Thread{
                     // get messages
                     list =  (ArrayList<TimeStampMessage>)logger.showMessages();
                     for(int i = 0; i < list.size()-1;i++){
-                    	System.out.println(list.get(i).toString());
+                    	System.out.println(list.get(i));
+                    	if (Logger.getInstance().clockType == CLOCK_TYPE.VECTOR) {
+                    	    compareWithPeers(i, list);
+                    	}                 	
                     	int ret = list.get(i).compareTo(list.get(i+1));
-                    	if(ret == 0)
+                    	if(ret == 0) {
                     		System.out.println("||");
-                    	else System.out.println("->");
+                    	} else {
+                    	    System.out.println("->");
+                    	}
                     }
-                    System.out.println(list.get(list.size()-1).toString());
+                    System.out.println(list.get(list.size()-1));
                 }
             }
         } catch (Exception e) {
             System.err.println("ERROR: Reader corrput");
             e.printStackTrace();
         }
+    }
+
+	 /**
+	  * compare with other message in the list
+	  * @param index
+	  * @param timeStampMessage
+	  */
+    private void compareWithPeers(int index, ArrayList<TimeStampMessage> list) {
+        TimeStampMessage target = list.get(index);
+        
+        for (int i = index+1; i < list.size(); i++) {
+            int ret = target.compareTo(list.get(i));
+            if (ret == 0) {
+                System.out.print("  ||  ");
+            } else {
+                System.out.print("  ->  ");
+            }
+            System.out.print(list.get(i).getTimeStamp());
+        }
+        System.out.println();
     }
 }

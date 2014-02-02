@@ -25,8 +25,7 @@ public class LoggerListenThread extends Thread {
         try {
             ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
             while(true) {
-                Message message = (Message)in.readObject();
-                
+                Message message = (Message)in.readObject();            
                 receiveIn(message, logger);
             }
         } catch (Exception e) {
