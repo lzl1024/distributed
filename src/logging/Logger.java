@@ -11,7 +11,6 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -26,7 +25,6 @@ import record.Node;
 import thread.LoggerListenerSocketThread;
 import thread.LoggerThread;
 import util.Config;
-import clock.ClockService;
 import clock.ClockService.CLOCK_TYPE;
 
 public class Logger{
@@ -122,10 +120,11 @@ public class Logger{
 	 * @return ArrayList<Message>
 	 */
 	public ArrayList<TimeStampMessage> showMessages(){
+	    
 		while(rcvBuffer.size()>0){
 			this.receiveList.add((TimeStampMessage)rcvBuffer.poll());
 		}
-		Collections.sort((List<TimeStampMessage>)this.receiveList);
+		Collections.sort(this.receiveList);
 		return receiveList;
 	}
 	/**
@@ -180,13 +179,13 @@ public class Logger{
 				out = passer.outputStreamMap.get(name);
 			}
 
-			System.out.println("INFO: send message " + message);
+			System.out.println("INFO: send message to Logger" + message);
 			// send message
 			out.writeObject(message);
 			out.flush();
 			out.reset();
 		} catch (IOException e) {
-			System.err.println("ERROR: send message error, the other side may be offline " + message);
+			System.err.println("ERROR: send message error, the Logger may be offline " + message);
 		}
 	}
 	
@@ -197,8 +196,7 @@ public class Logger{
 		}    
 		instance = new Logger(args[0], args[1]);
 		instance.server = new ServerSocket(instance.myself.getPort());
-		// start clock
-		ClockService.createClock(instance.clockType);
+
 		// set up listener thread to build connection with other nodes
 		new LoggerListenerSocketThread(instance.server).start();
 		// set up user thread to receive user input

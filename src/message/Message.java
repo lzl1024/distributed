@@ -47,11 +47,13 @@ public class Message implements Serializable {
 			this.type = type;
 		}
 
-		@Override
+        @Override
         public String toString() {
-            return "[sequenceNumber=" + sequenceNumber + ", source="
-                    + source + ", dest=" + dest + ", kind=" + kind + "]";
-        }   
+            return "Header [sequenceNumber=" + sequenceNumber + ", source="
+                    + source + ", dest=" + dest + ", kind=" + kind + ", type="
+                    + type + "]";
+        }
+   
     }
     
     public Message(String dest, String kind, Object data) {
@@ -132,9 +134,12 @@ public class Message implements Serializable {
 	public void setType(Type type) {
 		this.header.setType(type);
 	}
+
     @Override
     public String toString() {
-        return "[header=" + header + ", payload=" + payload
-                + ", sendDuplicate=" + sendDuplicate + "]";
+        return "Message [header=" + header + ", payload=" + payload
+                + ", sendDuplicate=" + sendDuplicate + ", rcvDuplicate="
+                + rcvDuplicate + "]";
     }
+
 }

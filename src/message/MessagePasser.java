@@ -186,7 +186,7 @@ public class MessagePasser {
 				out = outputStreamMap.get(message.getDest());
 			}
 
-			System.out.println("INFO: send message " + message);
+			System.out.println("INFO: send message " + message);		
 
 			// send message
 			out.writeObject(message);
@@ -220,7 +220,7 @@ public class MessagePasser {
 	 */
 	public Message receive(Boolean isLog) {
 	    Message msg = rcvBuffer.poll();
-	    if (isLog) {
+	    if (isLog && msg != null) {
 	        Logger.log(Type.INFO, msg);
 	    }
 		return msg;

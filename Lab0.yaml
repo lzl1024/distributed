@@ -13,8 +13,12 @@ Configuration :
   - Name : bob 
     IP   : localhost
     Port : 14255
+
+  - Name : charlie 
+    IP   : localhost
+    Port : 13667
     
-  - Name : charlie
+  - Name : Logger
     IP   : localhost
     Port : 12998
 

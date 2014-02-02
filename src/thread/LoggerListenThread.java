@@ -5,8 +5,6 @@ import java.net.Socket;
 
 import logging.Logger;
 import message.Message;
-import message.TimeStampMessage;
-import clock.ClockService;
 
 
 /**
@@ -28,11 +26,6 @@ public class LoggerListenThread extends Thread {
             ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
             while(true) {
                 Message message = (Message)in.readObject();
-                
-                // update time if message is timestamp message
-                if (message instanceof TimeStampMessage) {
-                    ClockService.getInstance().updateLocalTime((TimeStampMessage)message);
-                }
                 
                 receiveIn(message, logger);
             }

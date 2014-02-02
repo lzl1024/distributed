@@ -19,6 +19,8 @@ public class VectorClock extends ClockService {
         for (String nodeName : nodes.keySet()) {
             local.getRealData().put(nodeName, new AtomicInteger(0));
         }
+        
+        local.getRealData().remove("Logger");
             
         // update localTime
         localTime = local;
