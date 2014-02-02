@@ -12,6 +12,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import message.Message;
+import message.MessagePasser;
+
 import org.yaml.snakeyaml.Yaml;
 
 import record.Node;
@@ -21,9 +24,12 @@ import thread.LoggerThread;
 import util.Config;
 import clock.ClockService;
 import clock.ClockService.CLOCK_TYPE;
-import message.Message;
 
 public class Logger{
+
+	public enum Type {
+	    INFO, SEVERE, ERROR
+	}
 
 	/** Constructor of , parse the configuration file
 	 *  and build the initial connection
@@ -160,6 +166,16 @@ public class Logger{
 		}
 	}
 
+	public static void log(Type t, Message m){
+		MessagePasser passer = MessagePasser.getInstance();
+		try {
+			passer.send(m);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	public static void main(String[] args) throws Exception {
 		if (args.length != 2) {
 			System.out.println("Usage: configuration_filename local_name");

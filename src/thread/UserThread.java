@@ -74,7 +74,7 @@ public class UserThread extends Thread {
                     // send to logger
                     TimeStampMessage msg2 = new TimeStampMessage(destLogger, kind, data);
                     msg2.set_source(passer.myself.getName());
-                    msg2.setDestNode(dest);
+                    //msg2.setDestNode(dest);
                     passer.send(msg);
                 }
             }

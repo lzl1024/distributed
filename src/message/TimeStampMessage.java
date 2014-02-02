@@ -16,15 +16,16 @@ public class TimeStampMessage extends Message{
 
     // timeStamp field
     private TimeStamp<?> timeStamp;
-    private String destNode;
     
-    public String getDestNode() {
-		return destNode;
-	}
-
-	public void setDestNode(String destNode) {
-		this.destNode = destNode;
-	}
+    //private String destNode;
+    
+//    public String getDestNode() {
+//		return destNode;
+//	}
+//
+//	public void setDestNode(String destNode) {
+//		this.destNode = destNode;
+//	}
 
 	public TimeStamp<?> getTimeStamp() {
         return timeStamp;
