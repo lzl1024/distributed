@@ -26,6 +26,10 @@ public class LoggerThread extends Thread{
                 if (cmdInput.equals("1")) {
                     // get messages
                     list =  (ArrayList<TimeStampMessage>)logger.showMessages();
+                    if (list == null || list.size() < 1) {
+                        continue;
+                    }
+                    
                     for(int i = 0; i < list.size()-1;i++){
                     	System.out.println(list.get(i));
                     	if (Logger.getInstance().clockType == CLOCK_TYPE.VECTOR) {
