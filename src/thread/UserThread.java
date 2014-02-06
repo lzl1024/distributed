@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 import message.MessagePasser;
+import message.MulticastMessage;
 import message.TimeStampMessage;
 import clock.ClockService;
 
@@ -24,7 +25,8 @@ public class UserThread extends Thread {
             while (true) {
                 // wait user input
                 System.out
-                        .println("Please enter your scenario \t 1: Send, 2: Receive, 3: Local Time, 4: Send with Log, 5: Receive with Log");
+                        .println("Please enter your scenario \t 1: Send, 2: Receive, 3: Local Time, 4: Send with Log, " +
+                        		"5: Receive with Log, 6: Multicast Send");
                 in = new BufferedReader(new InputStreamReader(System.in));
                 String cmdInput = in.readLine();
                 // handle with "send"
@@ -39,6 +41,19 @@ public class UserThread extends Thread {
                     sendMessage(passer, in, true);
                 } else if (cmdInput.equals("5")) {
                     passer.receive(true);
+                } else if (cmdInput.equals("6")) {
+                    System.out.println("Please enter your dest group:");
+                    String dest = in.readLine();
+                    while (!passer.groupInfo.containsKey(dest)) {
+                        System.out
+                                .println("Your Dest has not been registered, enter again:");
+                        dest = in.readLine();
+                    }
+                    System.out.println("Please enter the kind:");
+                    String kind = in.readLine();
+                    System.out.println("Please enter the data:");
+                    String data = in.readLine();
+                    new MulticastMessage(dest, kind, data).send();
                 }
             }
         } catch (Exception e) {

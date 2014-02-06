@@ -194,8 +194,8 @@ public class MessagePasser {
 	 * Send away message to specific destination
 	 * @param message
 	 */
-	@SuppressWarnings({ "resource"})
-	private void sendAway(Message message) {
+	@SuppressWarnings({ "resource"}) 
+	public void sendAway(Message message) {
 		ObjectOutputStream out;
 		
 		try {

@@ -9,10 +9,12 @@ public class MulticastMessage extends TimeStampMessage {
     
     // new field group name and group seqNumber of this message 
     protected int grpSeqNumber;
+    // the real dest node
+    protected String groupDest;
     
-    public MulticastMessage(String dest, String kind, Object data, int seqNumber) {
-        super(dest, kind, data);
-        this.grpSeqNumber = seqNumber;
+    public MulticastMessage(String groupdest, String kind, Object data) {
+        super(null, kind, data);
+        this.groupDest = groupdest;
     }
 
     public int getGrpSeqNumber() {
@@ -31,5 +33,19 @@ public class MulticastMessage extends TimeStampMessage {
                 + grpSeqNumber + ", timeStamp=" + timeStamp + ", header="
                 + header + ", payload=" + payload + ", sendDuplicate="
                 + sendDuplicate + "]";
+    }
+
+    /**
+     * add a seqNumber and send away the message
+     */
+    public void send() {
+        MessagePasser passer = MessagePasser.getInstance();
+        // TODO: add seq number
+        
+        // truly send away the message
+        for (String realDest : passer.groupInfo.get(this.getDest())) {
+            this.setDest(realDest);
+            passer.sendAway(this);
+        }
     }
 }
