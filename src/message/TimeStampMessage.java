@@ -17,17 +17,7 @@ public class TimeStampMessage extends Message implements Comparable<TimeStampMes
     }
 
     // timeStamp field
-    private TimeStamp<?> timeStamp;
-    
-    //private String destNode;
-    
-//    public String getDestNode() {
-//		return destNode;
-//	}
-//
-//	public void setDestNode(String destNode) {
-//		this.destNode = destNode;
-//	}
+    protected TimeStamp<?> timeStamp;
 
 	public TimeStamp<?> getTimeStamp() {
         return timeStamp;

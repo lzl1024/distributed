@@ -8,6 +8,7 @@ import logging.Logger;
 import message.Message;
 import message.Message.Type;
 import message.MessagePasser;
+import message.MulticastMessage;
 import message.TimeStampMessage;
 import record.Rule;
 import record.Rule.ACTION;
@@ -79,6 +80,12 @@ public class PairListenThread extends Thread {
         if (message instanceof TimeStampMessage) {
             ClockService.getInstance().updateLocalTime((TimeStampMessage)message);
         }
+        
+        // check multicast message's logic
+        if (message instanceof MulticastMessage) {
+            // TODO: implement multicast message's receive logic here
+        }
+        
         passer.rcvBuffer.offer(message);
     }
 

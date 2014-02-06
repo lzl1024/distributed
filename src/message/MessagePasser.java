@@ -10,7 +10,9 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -56,6 +58,15 @@ public class MessagePasser {
 	// clock
 	public CLOCK_TYPE clockType;
 	
+	
+	// multicast information
+	// key: group name, value: a set of member
+	public HashMap<String, HashSet<String>> groupInfo; // read only
+	// dynamic and should be thread safe
+	public ConcurrentHashMap<String, Integer> grpSeqNum;
+	public ConcurrentLinkedQueue<MulticastMessage> holdBackQueue;
+	
+	
 	private ServerSocket server;
 
 
@@ -85,6 +96,11 @@ public class MessagePasser {
 			// get clock type
 			clockType = CLOCK_TYPE.valueOf(map.get("Clock").get(0).get("Type").toString());
 			
+			// get and initialize multicast group information
+			groupInfo = Config.parseGroup(map.get("groups"));
+			for (String groupName : groupInfo.keySet()) {
+			    grpSeqNum.put(groupName, 0);
+			}
 		} catch (FileNotFoundException e) {
 			System.err.println("ERROR: Cannot find/read the configuration file!");
 			e.printStackTrace();
@@ -105,6 +121,9 @@ public class MessagePasser {
 		delayOutMsgQueue = new ConcurrentLinkedQueue<Message>();
 		rcvBuffer = new ConcurrentLinkedQueue<Message>();
 		receiveList = new ArrayList<Message>();
+
+		// multicast data structures
+		holdBackQueue = new ConcurrentLinkedQueue<MulticastMessage>();
 	}
 
 	/**
@@ -127,6 +146,11 @@ public class MessagePasser {
 	    // update the timestamp
         if (message instanceof TimeStampMessage) {
             ((TimeStampMessage)message).setTimeStamp(ClockService.getInstance().newTime());
+        }
+        
+        // send the timestamp
+        if (message instanceof MulticastMessage) {
+            //TODO:
         }
 			
 		boolean duplicate = false;
