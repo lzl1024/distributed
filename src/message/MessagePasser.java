@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -21,6 +20,7 @@ import message.Message.Type;
 
 import org.yaml.snakeyaml.Yaml;
 
+import record.MultiMsgId;
 import record.Node;
 import record.Rule;
 import record.Rule.ACTION;
@@ -51,8 +51,8 @@ public class MessagePasser {
 	private AtomicInteger IDcounter;
 
 	// file
-	public long modified = 0;
-	public String configFileName = null;
+	private long modified = 0;
+	private String configFileName = null;
 	public String localName = null;
 	
 	// clock
@@ -62,11 +62,14 @@ public class MessagePasser {
 	// multicast information
 	// key: group name, value: a set of member
 	public HashMap<String, HashSet<String>> groupInfo; // read only
-	// dynamic and should be thread safe
-	public ConcurrentHashMap<String, Integer> grpSeqNum;
-	public ConcurrentLinkedQueue<MulticastMessage> holdBackQueue;
-	
-	
+	// record each group it belongs to an expect rcv seq vector
+	public HashMap<String, HashMap<String, Integer>> seqNumVector;
+	// each group has a holdBackQueue
+	public HashMap<String, ArrayList<MulticastMessage>> holdBackQueue;
+	// all the messages have been sent
+	// key: receive sequence vector, value: message
+	public HashMap<MultiMsgId, MulticastMessage> msgArchive;
+
 	private ServerSocket server;
 
 
@@ -98,9 +101,6 @@ public class MessagePasser {
 			
 			// get and initialize multicast group information
 			groupInfo = Config.parseGroup(map.get("groups"));
-			for (String groupName : groupInfo.keySet()) {
-			    grpSeqNum.put(groupName, 0);
-			}
 		} catch (FileNotFoundException e) {
 			System.err.println("ERROR: Cannot find/read the configuration file!");
 			e.printStackTrace();
@@ -123,7 +123,17 @@ public class MessagePasser {
 		receiveList = new ArrayList<Message>();
 
 		// multicast data structures
-		holdBackQueue = new ConcurrentLinkedQueue<MulticastMessage>();
+		holdBackQueue = new HashMap<String, ArrayList<MulticastMessage>>();
+		seqNumVector = new HashMap<String, HashMap<String, Integer>>();
+		msgArchive = new HashMap<MultiMsgId, MulticastMessage>();
+		// initiate group vector	
+		for (String group : groupInfo.keySet()) {
+		    HashMap<String, Integer> iniVector = new HashMap<String, Integer>();
+            for (String name : nodeMap.keySet()) {
+                iniVector.put(name, 0);
+            }
+            this.seqNumVector.put(group, iniVector);
+		}
 	}
 
 	/**
@@ -146,11 +156,6 @@ public class MessagePasser {
 	    // update the timestamp
         if (message instanceof TimeStampMessage) {
             ((TimeStampMessage)message).setTimeStamp(ClockService.getInstance().newTime());
-        }
-        
-        // send the timestamp
-        if (message instanceof MulticastMessage) {
-            //TODO:
         }
 			
 		boolean duplicate = false;
@@ -195,7 +200,7 @@ public class MessagePasser {
 	 * @param message
 	 */
 	@SuppressWarnings({ "resource"}) 
-	public void sendAway(Message message) {
+	private void sendAway(Message message) {
 		ObjectOutputStream out;
 		
 		try {

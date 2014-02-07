@@ -49,11 +49,9 @@ public class UserThread extends Thread {
                                 .println("Your Dest has not been registered, enter again:");
                         dest = in.readLine();
                     }
-                    System.out.println("Please enter the kind:");
-                    String kind = in.readLine();
                     System.out.println("Please enter the data:");
                     String data = in.readLine();
-                    new MulticastMessage(dest, kind, data).send();
+                    new MulticastMessage(dest, "DEFAULT", data).send();
                 }
             }
         } catch (Exception e) {

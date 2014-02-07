@@ -1,43 +1,36 @@
-package clock;
+package util;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map.Entry;
-import java.util.concurrent.atomic.AtomicInteger;
 
-public class VectorTimeStamp extends TimeStamp<HashMap<String, AtomicInteger>> {
+import message.MulticastMessage;
 
-    /**
-     * 
-     */
-    private static final long serialVersionUID = 1L;
-    
-    public VectorTimeStamp() {
-        time = new HashMap<String, AtomicInteger>();
-    }
+public class MultiComparator implements Comparator<MulticastMessage>{
 
     @Override
-    public int compareTo(TimeStamp<HashMap<String, AtomicInteger>> time2) {
+    public int compare(MulticastMessage arg0, MulticastMessage arg1) {
         // flag to see if one element has already before/after the correspond element
         boolean beforeFlag = false, afterFlag = false;
         
-        HashMap<String, AtomicInteger> timeStamp = time2.getRealData();
-        for (Entry<String, AtomicInteger> entry : time.entrySet()) {
+        HashMap<String, Integer> vector1 = arg0.getGrpSeqVector();
+        for (Entry<String, Integer> entry : arg1.getGrpSeqVector().entrySet()) {
             // if timeStamp structure is not the same, concurrent
-            if (!timeStamp.containsKey(entry.getKey())) {
+            if (!vector1.containsKey(entry.getKey())) {
                 return 0;
             }
             
-            int otherTime =  timeStamp.get(entry.getKey()).get();
-            int ownTime = entry.getValue().get();
+            int otherVector =  vector1.get(entry.getKey());
+            int ownVector = entry.getValue();
             
-            if (ownTime < otherTime) {
+            if (ownVector < otherVector) {
                 // before after flag be true, return concurrent
                 if (afterFlag) {
                     return 0;
                 }
                 beforeFlag = true;
             }    
-            if (ownTime > otherTime) {
+            if (ownVector > otherVector) {
                 // before after flag be true, return concurrent
                 if (beforeFlag) {
                     return 0;
@@ -53,10 +46,4 @@ public class VectorTimeStamp extends TimeStamp<HashMap<String, AtomicInteger>> {
         return beforeFlag ? -1 : 0;
     }
 
-    @Override
-    public HashMap<String, AtomicInteger> getRealData() {
-        return time;
-    }
-
-    
 }

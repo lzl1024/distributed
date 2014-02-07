@@ -16,5 +16,5 @@ public abstract class TimeStamp<E> implements Comparable<TimeStamp<E>>, Serializ
     @Override
     public String toString() {
         return "[time=" + time + "]";
-    }
+    }   
 }
