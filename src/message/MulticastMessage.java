@@ -75,7 +75,7 @@ public class MulticastMessage extends TimeStampMessage {
                 this);
 
         // send away the message
-        System.out.println("Send away multicast message: " + this);
+        //System.out.println("Send away multicast message: " + this);
         for (String realDest : passer.groupInfo.get(this.getGroupDest())) {
             if (!realDest.equals(passer.localName)) {
                 MulticastMessage msg = new MulticastMessage(this);

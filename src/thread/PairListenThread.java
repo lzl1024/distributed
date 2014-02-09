@@ -5,6 +5,7 @@ import java.io.ObjectInputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map.Entry;
 
 import logging.Logger;
@@ -98,14 +99,15 @@ public class PairListenThread extends Thread {
                 if (multiMsg.getKind().equals("NACK")) {
                     // get a nack, find the messages and send back
                     @SuppressWarnings("unchecked")
-                    ArrayList<MultiMsgId> idList = (ArrayList<MultiMsgId>)multiMsg.getPayload();
+                    ArrayList<MultiMsgId> idList = (ArrayList<MultiMsgId>) multiMsg
+                            .getPayload();
                     System.out.println("Get NACK, need ID: " + idList);
 
                     for (MultiMsgId id : idList) {
                         MulticastMessage msg = passer.msgArchive.get(id);
                         msg.setDest(multiMsg.get_source());
                         msg.setKind("NACK_ACK");
-                        System.out.println("Send NACK_ACK Message:" + msg);
+                        System.out.println("Send NACK_ACK Message:");
                         passer.send(msg, false);
                     }
                 } else {
@@ -115,9 +117,11 @@ public class PairListenThread extends Thread {
                             .get(multiMsg.getGroupDest());
                     // get the default message, check if it is the expect
                     // message, if match, put into deliver queue
-                    if (checkExcepted(multiMsg, passer)) {
+                    int expectNum;
+                    if ((expectNum = checkExpected(multiMsg, passer)) == 1) {
                         String src = multiMsg.get_source();
                         passer.rcvBuffer.offer(multiMsg);
+
                         int updatedSeq = multiMsg.getGrpSeqVector().get(src);
                         Collections.sort(groupHBqueue, new MultiComparator());
 
@@ -141,10 +145,15 @@ public class PairListenThread extends Thread {
                                 updatedSeq++;
                             }
                         }
-                        multiMsg.getGrpSeqVector().put(src, updatedSeq);
+
+                        @SuppressWarnings("unchecked")
+                        HashMap<String, Integer> seqVector = (HashMap<String, Integer>) multiMsg
+                                .getGrpSeqVector().clone();
+                        seqVector.put(src, updatedSeq);
                         // update local expect seq number
-                        passer.seqNumVector.put(multiMsg.getGroupDest(), multiMsg.getGrpSeqVector());
-                    } else {
+                        passer.seqNumVector.put(multiMsg.getGroupDest(),
+                                seqVector);
+                    } else if (expectNum < 0) {
                         // not expected, add to hold back queue
                         groupHBqueue.add(multiMsg);
                     }
@@ -167,41 +176,53 @@ public class PairListenThread extends Thread {
      * @return
      * @throws IOException
      */
-    private boolean checkExcepted(MulticastMessage multiMsg,
-            MessagePasser passer) throws IOException {
-        boolean returnFlag = true;
+    private int checkExpected(MulticastMessage multiMsg, MessagePasser passer)
+            throws IOException {
+        int returnFlag = 1;
 
         // compare the self-store vector with the message vector
         for (Entry<String, Integer> entry : passer.seqNumVector.get(
                 multiMsg.getGroupDest()).entrySet()) {
             if (entry.getKey().equals(multiMsg.get_source())) {
-                // find miss, send NACK
-                if ( multiMsg.getGrpSeqVector().get(entry.getKey()) > entry.getValue() + 1) {
-                    returnFlag = false;
+                if (multiMsg.getGrpSeqVector().get(entry.getKey()) < entry
+                        .getValue() + 1) {
+                    returnFlag = 0;
+                    // find miss, send NACK
+                } else if (multiMsg.getGrpSeqVector().get(entry.getKey()) > entry
+                        .getValue() + 1) {
+                    returnFlag = -1;
                     // send NACK
                     ArrayList<MultiMsgId> data = new ArrayList<MultiMsgId>();
-                    for (int i = entry.getValue() + 1; i < multiMsg.getGrpSeqVector().get(entry.getKey()); i++) {
+                    for (int i = entry.getValue() + 1; i < multiMsg
+                            .getGrpSeqVector().get(entry.getKey()); i++) {
                         data.add(new MultiMsgId(multiMsg.getGroupDest(), i));
                     }
-                    MulticastMessage msg = new MulticastMessage(null, "NACK", data);
+                    MulticastMessage msg = new MulticastMessage(null, "NACK",
+                            data);
                     msg.setDest(multiMsg.get_source());
                     msg.set_source(passer.localName);
-                    System.out.println("Send NACK Message:" + msg);
+                    System.out.println("Send NACK Message:");
                     passer.send(msg, false);
                 }
             } else {
                 // other nodes
-                if (multiMsg.getGrpSeqVector().get(entry.getKey()) > entry.getValue()) {
-                    returnFlag = false;
+                if (multiMsg.getGrpSeqVector().get(entry.getKey()) < entry
+                        .getValue()) {
+                    returnFlag = 0;
+                } else if (multiMsg.getGrpSeqVector().get(entry.getKey()) > entry
+                        .getValue()) {
+                    returnFlag = -1;
                     // send NACK
                     ArrayList<MultiMsgId> data = new ArrayList<MultiMsgId>();
-                    for (int i = entry.getValue(); i < multiMsg.getGrpSeqVector().get(entry.getKey()); i++) {
+                    for (int i = entry.getValue(); i < multiMsg
+                            .getGrpSeqVector().get(entry.getKey()); i++) {
                         data.add(new MultiMsgId(multiMsg.getGroupDest(), i));
                     }
-                    MulticastMessage msg = new MulticastMessage(null, "NACK", data);
+                    MulticastMessage msg = new MulticastMessage(null, "NACK",
+                            data);
                     msg.setDest(entry.getKey());
                     msg.set_source(passer.localName);
-                    System.out.println("Send NACK Message:" + msg);
+                    System.out.println("Send NACK Message:");
                     passer.send(msg, false);
                 }
             }
