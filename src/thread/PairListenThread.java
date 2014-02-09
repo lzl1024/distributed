@@ -5,7 +5,6 @@ import java.io.ObjectInputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map.Entry;
 
 import logging.Logger;
@@ -150,6 +149,7 @@ public class PairListenThread extends Thread {
                     }
                 }
             } catch (Exception e) {
+                e.printStackTrace();
                 System.out.println("Multicast Message type wrong!");
             }
         } else {
@@ -186,6 +186,7 @@ public class PairListenThread extends Thread {
                     }
                     MulticastMessage msg = new MulticastMessage(null, "NACK", data);
                     msg.setDest(multiMsg.get_source());
+                    msg.set_source(passer.localName);
                     System.out.println("Send NACK Message:" + msg);
                     passer.send(msg, false);
                 }
@@ -200,6 +201,7 @@ public class PairListenThread extends Thread {
                     }
                     MulticastMessage msg = new MulticastMessage(null, "NACK", data);
                     msg.setDest(entry.getKey());
+                    msg.set_source(passer.localName);
                     System.out.println("Send NACK Message:" + msg);
                     passer.send(msg, false);
                 }

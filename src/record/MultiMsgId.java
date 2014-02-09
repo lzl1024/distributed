@@ -50,6 +50,9 @@ public class MultiMsgId implements Serializable {
             return false;
         return true;
     }
-    
-   
+
+    @Override
+    public String toString() {
+        return "MultiMsgId [group=" + group + ", seqNum=" + seqNum + "]";
+    }
 }
