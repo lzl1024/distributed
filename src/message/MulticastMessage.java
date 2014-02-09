@@ -43,7 +43,7 @@ public class MulticastMessage extends TimeStampMessage {
 
     @Override
     public String toString() {
-        return "MulticastMessage [" + ", grpSeqNumber=" + grpSeqVector
+        return "MulticastMessage [" + "grpSeqNumber=" + grpSeqVector
                 + ", timeStamp=" + timeStamp + ", header=" + header
                 + ", payload=" + payload + ", sendDuplicate=" + sendDuplicate
                 + "]";
@@ -72,7 +72,7 @@ public class MulticastMessage extends TimeStampMessage {
 
         // send away the message
         System.out.println("Send away multicast message: " + this);
-        for (String realDest : passer.groupInfo.get(this.getDest())) {
+        for (String realDest : passer.groupInfo.get(this.getGroupDest())) {
             if (!realDest.equals(passer.localName)) {
                 this.setDest(realDest);
                 // send as the normal timestamp message

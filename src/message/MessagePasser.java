@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -127,12 +128,17 @@ public class MessagePasser {
 		seqNumVector = new HashMap<String, HashMap<String, Integer>>();
 		msgArchive = new HashMap<MultiMsgId, MulticastMessage>();
 		// initiate group vector	
-		for (String group : groupInfo.keySet()) {
+		for ( Entry<String, HashSet<String>> entry: groupInfo.entrySet()) {
+		    String group = entry.getKey();
 		    HashMap<String, Integer> iniVector = new HashMap<String, Integer>();
             for (String name : nodeMap.keySet()) {
                 iniVector.put(name, 0);
             }
             this.seqNumVector.put(group, iniVector);
+            
+            if (entry.getValue().contains(local_name)) {
+                holdBackQueue.put(group, new ArrayList<MulticastMessage>());
+            }
 		}
 	}
 
