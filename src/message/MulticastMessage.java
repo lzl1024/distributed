@@ -57,6 +57,7 @@ public class MulticastMessage extends TimeStampMessage {
      * 
      * @throws IOException
      */
+    @SuppressWarnings("unchecked")
     public void send() throws IOException {
         MessagePasser passer = MessagePasser.getInstance();
         this.set_source(passer.myself.getName());
@@ -69,7 +70,7 @@ public class MulticastMessage extends TimeStampMessage {
         int updateSeqNum = seqVector.get(passer.localName) + 1;
         seqVector.put(passer.localName, updateSeqNum);
         passer.seqNumVector.put(this.groupDest, seqVector);
-        this.grpSeqVector = seqVector;
+        this.grpSeqVector = (HashMap<String, Integer>) seqVector.clone();
         passer.msgArchive.put(new MultiMsgId(this.groupDest, updateSeqNum),
                 this);
 

@@ -119,7 +119,6 @@ public class PairListenThread extends Thread {
                         String src = multiMsg.get_source();
                         passer.rcvBuffer.offer(multiMsg);
                         int updatedSeq = multiMsg.getGrpSeqVector().get(src);
-
                         Collections.sort(groupHBqueue, new MultiComparator());
 
                         boolean findFlag = true;
@@ -143,6 +142,8 @@ public class PairListenThread extends Thread {
                             }
                         }
                         multiMsg.getGrpSeqVector().put(src, updatedSeq);
+                        // update local expect seq number
+                        passer.seqNumVector.put(multiMsg.getGroupDest(), multiMsg.getGrpSeqVector());
                     } else {
                         // not expected, add to hold back queue
                         groupHBqueue.add(multiMsg);
@@ -175,13 +176,11 @@ public class PairListenThread extends Thread {
                 multiMsg.getGroupDest()).entrySet()) {
             if (entry.getKey().equals(multiMsg.get_source())) {
                 // find miss, send NACK
-                System.out.println(entry.getKey()+" "+ entry.getValue() + " "+ multiMsg.getGrpSeqVector().get(entry.getKey()));
-                
                 if ( multiMsg.getGrpSeqVector().get(entry.getKey()) > entry.getValue() + 1) {
                     returnFlag = false;
                     // send NACK
                     ArrayList<MultiMsgId> data = new ArrayList<MultiMsgId>();
-                    for (int i = entry.getValue() + 1; i <= multiMsg.getGrpSeqVector().get(entry.getKey()); i++) {
+                    for (int i = entry.getValue() + 1; i < multiMsg.getGrpSeqVector().get(entry.getKey()); i++) {
                         data.add(new MultiMsgId(multiMsg.getGroupDest(), i));
                     }
                     MulticastMessage msg = new MulticastMessage(null, "NACK", data);
@@ -196,7 +195,7 @@ public class PairListenThread extends Thread {
                     returnFlag = false;
                     // send NACK
                     ArrayList<MultiMsgId> data = new ArrayList<MultiMsgId>();
-                    for (int i = entry.getValue(); i <= multiMsg.getGrpSeqVector().get(entry.getKey()); i++) {
+                    for (int i = entry.getValue(); i < multiMsg.getGrpSeqVector().get(entry.getKey()); i++) {
                         data.add(new MultiMsgId(multiMsg.getGroupDest(), i));
                     }
                     MulticastMessage msg = new MulticastMessage(null, "NACK", data);
