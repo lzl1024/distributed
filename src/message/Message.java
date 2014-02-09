@@ -15,6 +15,13 @@ public class Message implements Serializable {
 	public enum Type {
 	    INFO, SEVERE, ERROR, DEFAULT
 	}
+	
+    public Message(Message msg) {
+        this.header = new Header(msg.header);
+        this.payload = msg.payload;
+        this.sendDuplicate = msg.sendDuplicate;
+        this.rcvDuplicate = msg.rcvDuplicate;
+    }
 
     public class Header implements Serializable {
         /**
@@ -31,6 +38,12 @@ public class Message implements Serializable {
             this.dest = dest;
             this.kind = kind;
             this.type = type;
+        }
+        
+        public Header(Header header) {
+            this(header.dest, header.kind, header.type);
+            this.sequenceNumber = header.sequenceNumber;
+            this.source = header.source;
         }
         
         public Header(String dest, String kind) {

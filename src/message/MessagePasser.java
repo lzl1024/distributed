@@ -188,7 +188,8 @@ public class MessagePasser {
 			}
 			// send duplicated message if needed
 			if (duplicate) {
-				message.set_sendDuplicate(true);
+			    Message msg = new Message(message);
+				msg.set_sendDuplicate(true);
 				sendAway(message);
 	            Logger.log(Type.SEVERE, message);
 			}
@@ -213,7 +214,6 @@ public class MessagePasser {
 			// build connection if not
 			if (!outputStreamMap.containsKey(message.getDest())) {
 				Node node = nodeMap.get(message.getDest());
-
 				Socket socket = new Socket(node.getIpAddress(), node.getPort());
 				out = new ObjectOutputStream(socket.getOutputStream());
 				outputStreamMap.put(message.getDest(), out);

@@ -15,6 +15,11 @@ public class TimeStampMessage extends Message implements Comparable<TimeStampMes
     public TimeStampMessage(String dest, String kind, Object data) {
         super(dest, kind, data);
     }
+    
+    public TimeStampMessage(TimeStampMessage msg) {
+        super(msg);
+        this.timeStamp = msg.timeStamp;
+    }
 
     // timeStamp field
     protected TimeStamp<?> timeStamp;

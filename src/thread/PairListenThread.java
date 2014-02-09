@@ -13,7 +13,6 @@ import message.Message;
 import message.Message.Type;
 import message.MessagePasser;
 import message.MulticastMessage;
-import message.MulticastMessage.MULTI_MSG_TYPE;
 import message.TimeStampMessage;
 import record.MultiMsgId;
 import record.Rule;
@@ -97,8 +96,7 @@ public class PairListenThread extends Thread {
             MulticastMessage multiMsg = (MulticastMessage) message;
 
             try {
-                switch (MULTI_MSG_TYPE.valueOf(multiMsg.getKind())) {
-                case NACK:
+                if (multiMsg.getKind().equals("NACK")) {
                     // get a nack, find the messages and send back
                     @SuppressWarnings("unchecked")
                     ArrayList<MultiMsgId> idList = (ArrayList<MultiMsgId>)multiMsg.getPayload();
@@ -111,9 +109,7 @@ public class PairListenThread extends Thread {
                         System.out.println("Send NACK_ACK Message:" + msg);
                         passer.send(msg, false);
                     }
-
-                    break;
-                default:
+                } else {
                     System.out.println("Get MulticastMessage: " + multiMsg);
                     // update hold back queue
                     ArrayList<MulticastMessage> groupHBqueue = passer.holdBackQueue

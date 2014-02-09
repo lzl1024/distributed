@@ -6,10 +6,6 @@ import java.util.HashMap;
 import record.MultiMsgId;
 
 public class MulticastMessage extends TimeStampMessage {
-    public enum MULTI_MSG_TYPE {
-        NACK, NACK_ACK, ACK, DEFAULT
-    }
-
     /**
      * 
      */
@@ -23,6 +19,13 @@ public class MulticastMessage extends TimeStampMessage {
     public MulticastMessage(String groupdest, String kind, Object data) {
         super(null, kind, data);
         this.groupDest = groupdest;
+    }
+
+    @SuppressWarnings("unchecked")
+    public MulticastMessage(MulticastMessage msg) {
+        super(msg);
+        this.groupDest = msg.groupDest;
+        this.grpSeqVector = (HashMap<String, Integer>) msg.grpSeqVector.clone();
     }
 
     public HashMap<String, Integer> getGrpSeqVector() {
@@ -74,9 +77,10 @@ public class MulticastMessage extends TimeStampMessage {
         System.out.println("Send away multicast message: " + this);
         for (String realDest : passer.groupInfo.get(this.getGroupDest())) {
             if (!realDest.equals(passer.localName)) {
-                this.setDest(realDest);
+                MulticastMessage msg = new MulticastMessage(this);
+                msg.setDest(realDest);
                 // send as the normal timestamp message
-                passer.send(this, false);
+                passer.send(msg, false);
             }
         }
     }
