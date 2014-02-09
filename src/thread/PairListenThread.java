@@ -169,19 +169,19 @@ public class PairListenThread extends Thread {
     private boolean checkExcepted(MulticastMessage multiMsg,
             MessagePasser passer) throws IOException {
         boolean returnFlag = true;
-        HashMap<String, Integer> localVector = passer.seqNumVector.get(multiMsg
-                .getGroupDest());
 
         // compare the self-store vector with the message vector
         for (Entry<String, Integer> entry : passer.seqNumVector.get(
                 multiMsg.getGroupDest()).entrySet()) {
-            if (entry.getKey().equals(passer.localName)) {
+            if (entry.getKey().equals(multiMsg.get_source())) {
                 // find miss, send NACK
-                if (entry.getValue() > localVector.get(passer.localName) + 1) {
+                System.out.println(entry.getKey()+" "+ entry.getValue() + " "+ multiMsg.getGrpSeqVector().get(entry.getKey()));
+                
+                if ( multiMsg.getGrpSeqVector().get(entry.getKey()) > entry.getValue() + 1) {
                     returnFlag = false;
                     // send NACK
                     ArrayList<MultiMsgId> data = new ArrayList<MultiMsgId>();
-                    for (int i = localVector.get(passer.localName) + 1; i <= entry.getValue(); i++) {
+                    for (int i = entry.getValue() + 1; i <= multiMsg.getGrpSeqVector().get(entry.getKey()); i++) {
                         data.add(new MultiMsgId(multiMsg.getGroupDest(), i));
                     }
                     MulticastMessage msg = new MulticastMessage(null, "NACK", data);
@@ -191,11 +191,11 @@ public class PairListenThread extends Thread {
                 }
             } else {
                 // other nodes
-                if (entry.getValue() > localVector.get(entry.getKey())) {
+                if (multiMsg.getGrpSeqVector().get(entry.getKey()) > entry.getValue()) {
                     returnFlag = false;
                     // send NACK
                     ArrayList<MultiMsgId> data = new ArrayList<MultiMsgId>();
-                    for (int i = localVector.get(entry.getKey()); i <= entry.getValue(); i++) {
+                    for (int i = entry.getValue(); i <= multiMsg.getGrpSeqVector().get(entry.getKey()); i++) {
                         data.add(new MultiMsgId(multiMsg.getGroupDest(), i));
                     }
                     MulticastMessage msg = new MulticastMessage(null, "NACK", data);

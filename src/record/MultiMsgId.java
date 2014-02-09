@@ -1,12 +1,18 @@
 package record;
 
+import java.io.Serializable;
+
 /**
  * 
  * Helper class to find specific multicast message
  *
  */
-public class MultiMsgId {
+public class MultiMsgId implements Serializable {
     
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
     public String group;
     public int seqNum;
     
