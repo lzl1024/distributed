@@ -35,6 +35,7 @@ public class PairListenThread extends Thread {
     public void run() {
         MessagePasser passer = MessagePasser.getInstance();
         try {
+            Thread.sleep(50);
             ObjectInputStream in = new ObjectInputStream(
                     socket.getInputStream());
             while (true) {
@@ -168,8 +169,17 @@ public class PairListenThread extends Thread {
                                 seqVector);    
 
                     } else if (expectNum < 0) {
-                        // not expected, add to hold back queue
-                        groupHBqueue.add(multiMsg);
+                        // not expected, check add to hold back queue
+                        boolean sameFlag = false;
+                        for (MulticastMessage msg : groupHBqueue) {
+                            if (msg.getGrpSeqVector().equals(multiMsg.getGrpSeqVector())) {
+                                sameFlag = true;
+                            }
+                        }
+                        // add to hold back queue if nothing the same
+                        if (!sameFlag) {
+                            groupHBqueue.add(multiMsg);
+                        }
                     }
                 }
             } catch (Exception e) {

@@ -227,8 +227,9 @@ public class MessagePasser {
 			// send message
 			out.writeObject(message);
 			out.flush();
-			out.reset();			
-		} catch (IOException e) {
+			out.reset();
+			Thread.sleep(50);
+		} catch (Exception e) {
 			System.err.println("ERROR: send message error, the other side may be offline " + message);
 		}
 	}
