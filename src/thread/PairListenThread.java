@@ -267,7 +267,7 @@ public class PairListenThread extends Thread {
         // compare the self-store vector with the message vector
         for (Entry<String, Integer> entry : passer.seqNumVector.get(
                 multiMsg.getGroupDest()).entrySet()) {
-            if (passer.groupInfo.containsKey(entry.getKey())
+            if (passer.groupInfo.get(multiMsg.getGroupDest()).contains(entry.getKey())
                     && !entry.getKey().equals(senderName)) {
                 if (multiMsg.getGrpSeqVector().get(entry.getKey()) > entry
                           .getValue()) {
@@ -288,7 +288,6 @@ public class PairListenThread extends Thread {
                 }
             }
         }
-
         return smallFlag == 0 ? smallFlag : returnFlag;
     }
 
