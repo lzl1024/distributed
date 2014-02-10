@@ -36,7 +36,7 @@ public class TimeStampMessage extends Message implements Comparable<TimeStampMes
     public String toString() {
         return "[timeStamp=" + timeStamp + ", header="
                 + header + ", payload=" + payload + ", sendDuplicate="
-                + sendDuplicate + "]";
+                + sendDuplicate + "]\n";
     }
 
 	@Override

@@ -111,6 +111,7 @@ public class PairListenThread extends Thread {
                     }
                 } else {
                     System.out.println("Get MulticastMessage: " + multiMsg);
+
                     // update hold back queue
                     ArrayList<MulticastMessage> groupHBqueue = passer.holdBackQueue
                             .get(multiMsg.getGroupDest());
@@ -120,33 +121,36 @@ public class PairListenThread extends Thread {
                     if ((expectNum = checkExpected(multiMsg, passer)) == 1) {
                         passer.rcvBuffer.offer(multiMsg);
 
-                        int updatedSeq = sumMap(multiMsg.getGrpSeqVector());
                         Collections.sort(groupHBqueue);
 
-                        @SuppressWarnings("unchecked")
-                        HashMap<String, Integer> seqVector = (HashMap<String, Integer>) multiMsg
-                                .getGrpSeqVector().clone();
+                        HashMap<String, Integer> seqVector = passer.seqNumVector.get(multiMsg
+                                .getGroupDest());
+                        for (Entry<String, Integer> entry : multiMsg.getGrpSeqVector().entrySet()) {
+                            seqVector.put(entry.getKey(), Math.max(entry.getValue(),
+                                    seqVector.get(entry.getKey())));
+                        }
 
                         boolean findFlag = true;
                         int k = groupHBqueue.size();
                         while (!groupHBqueue.isEmpty() && findFlag) {
                             findFlag = false;
+                            @SuppressWarnings("unchecked")
+                            HashMap<String, Integer> updateVector = (HashMap<String, Integer>) seqVector.clone();
 
                             // find if the seq+1 is in the hold back queue
                             for (int i = 0; i < k; i++) {
-                                if (sumMap(groupHBqueue.get(i)
-                                        .getGrpSeqVector()) == updatedSeq + 1) {
+                                if (lessTwoCons(groupHBqueue.get(i)
+                                                .getGrpSeqVector(), seqVector)) {
                                     findFlag = true;
                                     MulticastMessage tmp = groupHBqueue
                                             .remove(i);
                                     passer.rcvBuffer.offer(tmp);
 
                                     // update local expect seq number
-                                    for (Entry<String, Integer> entry : tmp
-                                            .getGrpSeqVector().entrySet()) {
-                                        seqVector.put(entry.getKey(), Math.max(
+                                    for (Entry<String, Integer> entry : tmp.getGrpSeqVector().entrySet()) {
+                                        updateVector.put(entry.getKey(), Math.max(
                                                 entry.getValue(),
-                                                seqVector.get(entry.getKey())));
+                                                updateVector.get(entry.getKey())));
                                     }
 
                                     // update iterator
@@ -155,13 +159,14 @@ public class PairListenThread extends Thread {
                                 }
                             }
 
-                            if (findFlag) {
-                                updatedSeq++;
+                            if (findFlag) {  
+                                seqVector = updateVector;
                             }
                         }
 
                         passer.seqNumVector.put(multiMsg.getGroupDest(),
-                                seqVector);
+                                seqVector);    
+
                     } else if (expectNum < 0) {
                         // not expected, add to hold back queue
                         groupHBqueue.add(multiMsg);
@@ -177,17 +182,38 @@ public class PairListenThread extends Thread {
     }
 
     /**
+     * no more than one number should be more than one
+     * @param grpSeqVector
+     * @param seqVector
+     * @return
+     */
+    private boolean lessTwoCons(HashMap<String, Integer> grpSeqVector,
+            HashMap<String, Integer> local) {
+        boolean bigFlag = false;
+        
+        for (Entry<String, Integer> entry: grpSeqVector.entrySet()) {
+            int localNum = local.get(entry.getKey());
+            if (entry.getValue() > localNum + 1 || (entry.getValue() > localNum && bigFlag)) {
+                return false;
+            } else if (entry.getValue() == localNum + 1){
+                bigFlag = true;
+            }
+        }
+        return bigFlag;
+    }
+
+    /**
      * Get the sum of the vector
      * @param grpSeqVector
      * @return
      */
-    private int sumMap(HashMap<String, Integer> vector) {
+   /* private int sumMap(HashMap<String, Integer> vector) {
         int retValue = 0;
         for (int val : vector.values()) {
             retValue += val;
         }
         return retValue;
-    }
+    }*/
 
     /**
      * check if the rcv vector if expected vector. If not, send NACK and set
@@ -201,17 +227,18 @@ public class PairListenThread extends Thread {
     private int checkExpected(MulticastMessage multiMsg, MessagePasser passer)
             throws IOException {
         int returnFlag = 1;
-        int smallFlag = 1;
+        int smallFlag = 0;
         HashMap<String, Integer> localVector = passer.seqNumVector.get(multiMsg
                 .getGroupDest());
         String senderName = multiMsg.get_source();
-
+        
         // compare the source number in the vector with the local
-        if (multiMsg.getGrpSeqVector().get(senderName) < localVector
+        if (multiMsg.getGrpSeqVector().get(senderName) >= localVector
                 .get(senderName) + 1) {
-            smallFlag = 0;
-            // find miss, send NACK
-        } else if (multiMsg.getGrpSeqVector().get(senderName) > localVector
+            smallFlag = 1;
+        } 
+        // find miss, send NACK
+        if (multiMsg.getGrpSeqVector().get(senderName) > localVector
                 .get(senderName) + 1) {
             returnFlag = -1;
             // send NACK
@@ -232,11 +259,9 @@ public class PairListenThread extends Thread {
                 multiMsg.getGroupDest()).entrySet()) {
             if (passer.groupInfo.containsKey(entry.getKey())
                     && !entry.getKey().equals(senderName)) {
-                if (multiMsg.getGrpSeqVector().get(entry.getKey()) < entry
-                        .getValue()) {
-                    smallFlag = 0;
-                } else if (multiMsg.getGrpSeqVector().get(entry.getKey()) > entry
-                        .getValue()) {
+                if (multiMsg.getGrpSeqVector().get(entry.getKey()) > entry
+                          .getValue()) {
+                    smallFlag = 1;
                     returnFlag = -1;
                     // send NACK
                     ArrayList<MultiMsgId> data = new ArrayList<MultiMsgId>();
@@ -254,7 +279,7 @@ public class PairListenThread extends Thread {
             }
         }
 
-        return returnFlag == 1 ? smallFlag : returnFlag;
+        return smallFlag == 0 ? smallFlag : returnFlag;
     }
 
     /**

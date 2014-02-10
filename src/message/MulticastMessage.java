@@ -49,7 +49,7 @@ public class MulticastMessage extends TimeStampMessage {
         return "MulticastMessage [" + "grpSeqNumber=" + grpSeqVector
                 + ", timeStamp=" + timeStamp + ", header=" + header
                 + ", payload=" + payload + ", sendDuplicate=" + sendDuplicate
-                + "]";
+                + "]\n";
     }
 
     /**
@@ -70,6 +70,8 @@ public class MulticastMessage extends TimeStampMessage {
         int updateSeqNum = seqVector.get(passer.localName) + 1;
         seqVector.put(passer.localName, updateSeqNum);
         passer.seqNumVector.put(this.groupDest, seqVector);
+
+        
         this.grpSeqVector = (HashMap<String, Integer>) seqVector.clone();
         passer.msgArchive.put(new MultiMsgId(this.groupDest, updateSeqNum),
                 this);

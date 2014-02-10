@@ -64,7 +64,7 @@ public class Message implements Serializable {
         public String toString() {
             return "Header [sequenceNumber=" + sequenceNumber + ", source="
                     + source + ", dest=" + dest + ", kind=" + kind + ", type="
-                    + type + "]";
+                    + type + "]\n";
         }
    
     }
