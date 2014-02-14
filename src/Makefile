@@ -1,5 +1,5 @@
 Configfilename = /afs/andrew.cmu.edu/usr5/zhuolinl/18842/Lab0.yaml
-Name = alice
+Name = a
 
 all:	
 	javac -cp .:lib/snakeyaml-1.13.jar clock/*.java logging/*.java \

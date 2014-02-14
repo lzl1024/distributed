@@ -7,6 +7,8 @@ import java.io.InputStreamReader;
 import message.MessagePasser;
 import message.MulticastMessage;
 import message.TimeStampMessage;
+import util.Config.CS_STATUS;
+import util.MutexHelper;
 import clock.ClockService;
 
 /**
@@ -26,7 +28,7 @@ public class UserThread extends Thread {
                 // wait user input
                 System.out
                         .println("Please enter your scenario \t 1: Send, 2: Receive, 3: Local Time, 4: Send with Log, " +
-                        		"5: Receive with Log, 6: Multicast Send");
+                        		"5: Receive with Log, 6: Multicast Send, 7: Request, 8: Release");
                 in = new BufferedReader(new InputStreamReader(System.in));
                 String cmdInput = in.readLine();
                 // handle with "send"
@@ -54,6 +56,20 @@ public class UserThread extends Thread {
                     System.out.println("Please enter the data:");
                     String data = in.readLine();
                     new MulticastMessage(dest, kind, data).send();
+                } else if (cmdInput.equals("7")) {
+                    if (MutexHelper.csStatus == CS_STATUS.IN_CS) {
+                        System.out.println("You have already in CS!");
+                    } else {
+                        // send request message to its voting group
+                        new MulticastMessage(passer.localName, "REQUEST", "request a CS").send();
+                    }
+                } else if (cmdInput.equals("8")) {
+                    if (MutexHelper.csStatus == CS_STATUS.NOT_IN_CS) {
+                        System.out.println("You are not in CS!");
+                    } else {
+                        // send request message to its voting group
+                        new MulticastMessage(passer.localName, "RELEASE", "release CS").send();
+                    }
                 }
             }
         } catch (Exception e) {

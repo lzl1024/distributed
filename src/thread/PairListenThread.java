@@ -17,6 +17,7 @@ import message.TimeStampMessage;
 import record.MultiMsgId;
 import record.Rule;
 import record.Rule.ACTION;
+import util.MutexHelper;
 import clock.ClockService;
 
 /**
@@ -106,7 +107,7 @@ public class PairListenThread extends Thread {
                     for (MultiMsgId id : idList) {
                         MulticastMessage msg = passer.msgArchive.get(id);
                         msg.setDest(multiMsg.get_source());
-                        msg.setKind("NACK_ACK");
+                        //msg.setKind("NACK_ACK");
                         System.out.println("Send NACK_ACK Message:");
                         passer.send(msg, false);
                     }
@@ -120,8 +121,13 @@ public class PairListenThread extends Thread {
                     // message, if match, put into deliver queue
                     int expectNum;
                     if ((expectNum = checkExpected(multiMsg, passer)) == 1) {
-                        passer.rcvBuffer.offer(multiMsg);
-
+                        // different message goes to different handler
+                        if (MutexHelper.CSMsgType.contains(multiMsg.getKind())) {
+                            MutexHelper.handleMutexMsg(multiMsg);
+                        } else {
+                            passer.rcvBuffer.offer(multiMsg);
+                        }
+           
                         Collections.sort(groupHBqueue);
 
                         HashMap<String, Integer> seqVector = passer.seqNumVector.get(multiMsg
@@ -145,7 +151,11 @@ public class PairListenThread extends Thread {
                                     findFlag = true;
                                     MulticastMessage tmp = groupHBqueue
                                             .remove(i);
-                                    passer.rcvBuffer.offer(tmp);
+                                    if (MutexHelper.CSMsgType.contains(tmp.getKind())) {
+                                        MutexHelper.handleMutexMsg(tmp);
+                                    } else {
+                                        passer.rcvBuffer.offer(tmp);
+                                    }
 
                                     // update local expect seq number
                                     for (Entry<String, Integer> entry : tmp.getGrpSeqVector().entrySet()) {
@@ -212,18 +222,6 @@ public class PairListenThread extends Thread {
         return bigFlag;
     }
 
-    /**
-     * Get the sum of the vector
-     * @param grpSeqVector
-     * @return
-     */
-   /* private int sumMap(HashMap<String, Integer> vector) {
-        int retValue = 0;
-        for (int val : vector.values()) {
-            retValue += val;
-        }
-        return retValue;
-    }*/
 
     /**
      * check if the rcv vector if expected vector. If not, send NACK and set

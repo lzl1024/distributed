@@ -28,6 +28,7 @@ import record.Rule.ACTION;
 import thread.ListenerThread;
 import thread.UserThread;
 import util.Config;
+import util.MutexHelper;
 import clock.ClockService;
 import clock.ClockService.CLOCK_TYPE;
 
@@ -70,6 +71,7 @@ public class MessagePasser {
 	// all the messages have been sent
 	// key: receive sequence vector, value: message
 	public HashMap<MultiMsgId, MulticastMessage> msgArchive;
+	
 
 	private ServerSocket server;
 
@@ -127,6 +129,7 @@ public class MessagePasser {
 		holdBackQueue = new HashMap<String, ArrayList<MulticastMessage>>();
 		seqNumVector = new HashMap<String, HashMap<String, Integer>>();
 		msgArchive = new HashMap<MultiMsgId, MulticastMessage>();
+		
 		// initiate group vector	
 		for ( Entry<String, HashSet<String>> entry: groupInfo.entrySet()) {
 		    String group = entry.getKey();
@@ -332,6 +335,8 @@ public class MessagePasser {
 		instance.server = new ServerSocket(instance.myself.getPort());
 		// start clock
 		ClockService.createClock(instance.clockType);
+		// init mutex
+		MutexHelper.init();
 		// set up listener thread to build connection with other nodes
 		new ListenerThread(instance.server).start();
 		// set up user thread to receive user input

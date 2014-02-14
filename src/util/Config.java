@@ -9,6 +9,10 @@ import record.Node;
 import record.Rule;
 
 public class Config {
+    public enum CS_STATUS {
+        IN_CS, NOT_IN_CS
+    }
+    
     /**
      * Parse nodes from yaml file
      * 

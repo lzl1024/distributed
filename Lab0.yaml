@@ -6,17 +6,33 @@
 # These names will be used for src and dest addresses for the Message
 # The local node's name is included in this list
 Configuration :
-  - Name : alice 
+  - Name : a 
     IP   : localhost
-    Port : 12345        # This is the incoming port on which MP will listen
+    Port : 12389        # This is the incoming port on which MP will listen
                         # May be changed for further communication as usual
-  - Name : bob 
+  - Name : b 
     IP   : localhost
     Port : 14255
 
-  - Name : charlie 
+  - Name : c 
     IP   : localhost
     Port : 13667
+
+  - Name : d 
+    IP   : localhost
+    Port : 13689
+
+  - Name : e
+    IP   : localhost
+    Port : 13347
+  
+  - Name : f
+    IP   : localhost
+    Port : 13347
+
+  - Name : g
+    IP   : localhost
+    Port : 13347
     
   - Name : Logger
     IP   : localhost
@@ -24,28 +40,55 @@ Configuration :
 
 SendRules :
   - Action : drop # Ack message number 4 from bob to alice will not be sent
-    Src    : bob
-    Dest   : alice
+    Src    : b
+    Dest   : a
     ID     : 4
   - Action : delay # Every Lookup message in the system will be delayed
     Kind   : KKKKK
   - Action : duplicate      # 3rd message from alice that anyone 
-    Src    : alice        # receives will be duplicated
+    Src    : a        # receives will be duplicated
     EveryNth: 20
 
 ReceiveRules :
   - Action : delay
     Kind   : ABC
-    Dest   : bob
+    Dest   : b
 Clock:
-  - Type   : VECTOR
+  - Type   : LOGICAL
 
 groups :
-  - name : Group1
+  - name : a
     members :
-      - alice
-      - bob
-  - name : Group2
+      - a
+      - b
+      - c
+  - name : b
     members :
-      - charlie
-      - bob  
+      - b
+      - d
+      - f
+  - name : c
+    members :
+      - c
+      - e
+      - f
+  - name : d
+    members :
+      - a
+      - d
+      - e
+  - name : e
+    members :
+      - a
+      - d
+      - e
+  - name : f
+    members :
+      - b
+      - e
+      - g
+  - name : g
+    members :
+      - a
+      - f
+      - g     
