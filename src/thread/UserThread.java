@@ -3,6 +3,7 @@ package thread;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.HashSet;
 
 import message.MessagePasser;
 import message.MulticastMessage;
@@ -28,7 +29,7 @@ public class UserThread extends Thread {
                 // wait user input
                 System.out
                         .println("Please enter your scenario \t 1: Send, 2: Receive, 3: Local Time, 4: Send with Log, " +
-                        		"5: Receive with Log, 6: Multicast Send, 7: Request, 8: Release");
+                        		"5: Receive with Log, 6: Multicast Send, 7: Request, 8: Release, 9: Show Mutex Status");
                 in = new BufferedReader(new InputStreamReader(System.in));
                 String cmdInput = in.readLine();
                 // handle with "send"
@@ -67,9 +68,14 @@ public class UserThread extends Thread {
                     if (MutexHelper.csStatus == CS_STATUS.NOT_IN_CS) {
                         System.out.println("You are not in CS!");
                     } else {
+                        // restore the changed status
+                        MutexHelper.csStatus = CS_STATUS.NOT_IN_CS;
+                        MutexHelper.getVoted = new HashSet<String>();
                         // send request message to its voting group
                         new MulticastMessage(passer.localName, "RELEASE", "release CS").send();
                     }
+                } else if (cmdInput.equals("9")) {
+                    System.out.println(MutexHelper.csStatus);
                 }
             }
         } catch (Exception e) {

@@ -39,13 +39,15 @@ Configuration :
     Port : 12998
 
 SendRules :
-  - Action : delay # Every Lookup message in the system will be delayed
-    Kind   : KKKKK
-
-ReceiveRules :
   - Action : delay
     Kind   : ABC
     Dest   : b
+
+ReceiveRules :
+  - Action : delay # Every Lookup message in the system will be delayed
+    Kind   : REQUEST
+    Src    : b
+    Dest   : d
 Clock:
   - Type   : LOGICAL
 
