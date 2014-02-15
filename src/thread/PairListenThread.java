@@ -18,6 +18,7 @@ import record.MultiMsgId;
 import record.Rule;
 import record.Rule.ACTION;
 import util.MutexHelper;
+import util.Config.CS_STATUS;
 import clock.ClockService;
 
 /**
@@ -110,6 +111,14 @@ public class PairListenThread extends Thread {
                         //msg.setKind("NACK_ACK");
                         System.out.println("Send NACK_ACK Message:");
                         passer.send(msg, false);
+                    }
+                } else if (multiMsg.getKind().equals("VOTE")) {
+                    System.out.println("GET vote from : "+ multiMsg.get_source());
+                    MutexHelper.getVoted.add(message.get_source());
+                    // if get all of the vote, get into the CS
+                    if (MutexHelper.getVoted.size() == MutexHelper.numofGrpMember) {
+                        System.out.println("INFO: " + passer.localName + " get into the critical section!");
+                        MutexHelper.csStatus = CS_STATUS.IN_CS;
                     }
                 } else {
                     System.out.println("Get MulticastMessage: " + multiMsg);
@@ -236,9 +245,15 @@ public class PairListenThread extends Thread {
             throws IOException {
         int returnFlag = 1;
         int smallFlag = 0;
-        HashMap<String, Integer> localVector = passer.seqNumVector.get(multiMsg
-                .getGroupDest());
+        @SuppressWarnings("unchecked")
+        HashMap<String, Integer> localVector = (HashMap<String, Integer>) 
+            passer.seqNumVector.get(multiMsg.getGroupDest()).clone();
         String senderName = multiMsg.get_source();
+        
+        // if send to one self
+        if (senderName.equals(multiMsg.getDest())) {
+            localVector.put(senderName, localVector.get(senderName) - 1);
+        }
         
         // compare the source number in the vector with the local
         if (multiMsg.getGrpSeqVector().get(senderName) >= localVector

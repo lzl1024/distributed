@@ -15,18 +15,18 @@ import util.Config.CS_STATUS;
  *
  */
 public class MutexHelper {
-    public static final HashSet<String> CSMsgType = new HashSet<String>(Arrays.asList("REQUEST","VOTE","RELEASE")); 
+    public static final HashSet<String> CSMsgType = new HashSet<String>(Arrays.asList("REQUEST","RELEASE")); 
     
     private enum MSG_TYPE {
-        REQUEST, VOTE, RELEASE
+        REQUEST, RELEASE
     }
     
     // CS information
-    private static CS_STATUS csStatus;
+    public static CS_STATUS csStatus;
+    public static HashSet<String> getVoted;
+    public static int numofGrpMember;
     private static ConcurrentLinkedQueue<MulticastMessage> voteQueue;
     private static boolean voted;
-    private static HashSet<String> getVoted;
-    private static int numofGrpMember;
     private static MessagePasser passer;
     
     public static void init(){
@@ -60,13 +60,6 @@ public class MutexHelper {
                 passer.send(msg, false);
             }
             break;
-        case VOTE:
-            getVoted.add(message.get_source());
-            // if get all of the vote, get into the CS
-            if (getVoted.size() == numofGrpMember) {
-                System.out.println("INFO: " + passer.localName + " get into the critical section!");
-                csStatus = CS_STATUS.IN_CS;
-            }
         case RELEASE:
             if (voteQueue.isEmpty()) {
                 voted = false;
@@ -79,7 +72,6 @@ public class MutexHelper {
                 msg.set_source(passer.localName);
                 passer.send(msg, false);
             }
-            break;
         }  
     }  
 }

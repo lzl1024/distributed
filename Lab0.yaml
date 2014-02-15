@@ -39,15 +39,8 @@ Configuration :
     Port : 12998
 
 SendRules :
-  - Action : drop # Ack message number 4 from bob to alice will not be sent
-    Src    : b
-    Dest   : a
-    ID     : 4
   - Action : delay # Every Lookup message in the system will be delayed
     Kind   : KKKKK
-  - Action : duplicate      # 3rd message from alice that anyone 
-    Src    : a        # receives will be duplicated
-    EveryNth: 20
 
 ReceiveRules :
   - Action : delay
