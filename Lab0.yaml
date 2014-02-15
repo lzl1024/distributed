@@ -28,11 +28,11 @@ Configuration :
   
   - Name : f
     IP   : localhost
-    Port : 13347
+    Port : 13894
 
   - Name : g
     IP   : localhost
-    Port : 13347
+    Port : 13128
     
   - Name : Logger
     IP   : localhost
